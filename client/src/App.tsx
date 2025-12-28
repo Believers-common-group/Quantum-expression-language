@@ -9,12 +9,14 @@ import Dashboard from "@/pages/dashboard";
 import Wizard from "@/pages/wizard";
 import Observability from "@/pages/observability";
 import Calculators from "@/pages/calculators";
+import SpectatorView from "@/pages/spectator";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Login} />
       <Route path="/dashboard" component={Dashboard} />
+      <Route path="/spectator" component={SpectatorView} />
       <Route path="/wizard" component={Wizard} />
       <Route path="/observability" component={Observability} />
       <Route path="/calculators" component={Calculators} />

@@ -15,6 +15,33 @@ export const mockLogs = [
   { id: 5, time: "10:43:45", level: "SUCCESS", message: "ERP Backfill trigger executed for batch #4421." },
 ];
 
+export const mockMoments = [
+  { 
+    id: "m-1", 
+    title: "Edge Node Handshake", 
+    duration: "00:12", 
+    timestamp: "10:42:01", 
+    thumbnail: "bg-primary/20", 
+    type: "security" 
+  },
+  { 
+    id: "m-2", 
+    title: "Schema Validation Spike", 
+    duration: "00:08", 
+    timestamp: "10:42:12", 
+    thumbnail: "bg-amber-500/20", 
+    type: "alert" 
+  },
+  { 
+    id: "m-3", 
+    title: "ERP Sync Completion", 
+    duration: "00:15", 
+    timestamp: "10:43:45", 
+    thumbnail: "bg-green-500/20", 
+    type: "success" 
+  }
+];
+
 export const mockObservabilityData = [
   { time: "00:00", latency: 20, throughput: 400 },
   { time: "04:00", latency: 25, throughput: 300 },

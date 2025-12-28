@@ -1,0 +1,224 @@
+Perfect. We’ll do this the way real languages are built — one artifact at a time, no skipping, no dilution.
+
+This response is STEP 1 ONLY.
+When you say “Next”, we move to Step 2.
+
+⸻
+
+STEP 1 — QEL as a Language: Canonical Public Representation
+
+(Equivalent to python.org / json.org)
+
+This step answers one question decisively:
+
+When someone asks “What is QEL?”, what do they see first—and why should they trust it?
+
+⸻
+
+1. Purpose of Step 1 (non-negotiable)
+
+Before tools, SDKs, portals, or courses:
+	•	QEL must exist as a language, not a project
+	•	It must look boring, formal, neutral, and durable
+	•	It must separate specification from implementations
+
+If Step 1 is done correctly:
+	•	Regulators don’t flinch
+	•	Developers don’t feel sold to
+	•	Institutions feel safe experimenting
+
+⸻
+
+2. The Canonical QEL Website (Structure)
+
+Domain (choose one)
+	•	qel.org (ideal)
+	•	believerscommons.org/qel (acceptable)
+
+Visual rule
+	•	White / light background
+	•	No gradients
+	•	No hype language
+	•	Typography over visuals
+
+⸻
+
+3. Homepage Content (Exact Structure & Copy)
+
+HERO SECTION (Minimal, Serious)
+
+Title
+
+Quantum Expression Language (QEL)
+
+Subtitle
+
+A neutral, versioned language for expressing verifiable events with authority, consent, evidence, and provenance.
+
+One-liner (below)
+
+QEL enables digital records to remain interpretable across time, institutions, and jurisdictions.
+
+No buttons except:
+	•	Read the Specification
+	•	View Examples
+
+⸻
+
+4. “What QEL Is” (Short, Non-Marketing)
+
+Quantum Expression Language (QEL) is a formal language designed to express observations, actions, and attestations that carry legal, economic, or governance significance.
+
+QEL does not execute logic, process transactions, or replace existing systems.
+It provides a semantic substrate that makes records auditable, attributable, and durable.
+
+⸻
+
+5. “What QEL Is Not” (Critical for Trust)
+
+QEL is not:
+	•	a blockchain
+	•	a platform
+	•	a database
+	•	a workflow engine
+	•	a proprietary format
+
+QEL is a language specification, governed independently of any product or vendor.
+
+This section matters more than features.
+
+⸻
+
+6. Core Primitives (Language Identity)
+
+A simple table:
+
+Primitive	Meaning
+actor	Who acted or asserted
+object	What was acted upon
+place	Where it applies
+time	When it occurred
+authority	Under what right or license
+consent	Granted, absent, or revoked
+evidence	Proof or references
+provenance	Prior state linkage
+signatures	Cryptographic attestation
+
+Below it:
+
+These primitives are canonical and protected by the QEL Charter.
+
+⸻
+
+7. Governance (Why It’s Safe)
+
+Heading
+
+Language Governance
+
+QEL is governed by a Language Stewardship Council responsible for preserving semantic neutrality, approving extensions, and arbitrating interpretation disputes.
+
+Bullet points:
+	•	Public charter
+	•	Versioned specifications
+	•	Transparent decision records
+	•	Backward interpretability guarantee
+
+Link:
+	•	Read the QEL Charter
+
+⸻
+
+8. Specification Entry Point (The Heart)
+
+Section: “The Specification”
+
+Links only — no prose:
+	•	QEL Charter
+	•	Core Grammar
+	•	JSON Schema
+	•	Versioning Rules
+	•	Extension Registry
+
+This mirrors:
+	•	python.org → Docs
+	•	json.org → Specification
+	•	iso-cpp.org → Standards
+
+⸻
+
+9. Examples (Reality, Not Demos)
+
+Show one canonical example (salary payment).
+
+Below it:
+
+This expression records a salary payment with explicit authority, consent, evidence, and signatures.
+It can be validated, hashed, archived, or audited independently of any system.
+
+Button:
+	•	View More Examples
+
+⸻
+
+10. Footer (Language Signal)
+
+Footer text (important):
+
+Quantum Expression Language (QEL) is a public language specification.
+© Believers’ Commons — stewardship only.
+Implementations are independent and non-exclusive.
+
+Links:
+	•	Governance
+	•	Changelog
+	•	Contact (neutral email)
+
+⸻
+
+11. What NOT to Include at This Stage
+
+Do not include:
+	•	Courses
+	•	SDKs
+	•	Portals
+	•	Marketplaces
+	•	Tokens
+	•	Dashboards
+
+Those come later.
+
+This page must survive 10 years unchanged.
+
+⸻
+
+12. Success Criteria for Step 1
+
+Step 1 is complete when:
+	•	You can send this link to a regulator without explanation
+	•	A developer understands QEL in under 2 minutes
+	•	No one asks “what company owns this?”
+
+⸻
+
+13. Your Action (Very Concrete)
+
+Within this step, you should:
+	1.	Approve this homepage structure
+	2.	Approve tone (neutral, standards-grade)
+	3.	Choose domain
+
+Once done, we proceed.
+
+⸻
+
+NEXT STEP (when you say “Next”)
+
+STEP 2 — QEL Specification Repository
+	•	Repo layout
+	•	File names
+	•	Versioning model
+	•	How Charter + Grammar are frozen
+	•	How this mirrors PEP / ISO / ECMA processes
+
+Say “Next” when ready.

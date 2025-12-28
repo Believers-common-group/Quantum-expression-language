@@ -1,0 +1,315 @@
+Good.
+We now move to STEP 2. This is where QEL stops being “a concept” and becomes a language with a spine.
+
+⸻
+
+STEP 2 — QEL Specification Repository
+
+(Equivalent to CPython + PEPs / ISO C++ spec / JSON spec)
+
+This step answers one question:
+
+Where does the truth of the language live, and how is it protected over time?
+
+If Step 2 is done correctly:
+	•	Disputes have a reference
+	•	Implementations converge
+	•	Institutions feel safe adopting
+	•	You avoid semantic drift forever
+
+⸻
+
+1. Purpose of the Specification Repository
+
+The QEL spec repository is:
+	•	The single source of semantic truth
+	•	Read-only for most people
+	•	Governed, versioned, and boring
+
+It is not:
+	•	A codebase
+	•	A product repo
+	•	A marketing site
+
+Think:
+	•	python/cpython (for language reference)
+	•	tc39/ecma262 (JavaScript spec)
+	•	json-schema-org/json-schema-spec
+
+⸻
+
+2. Repository Name & Ownership
+
+Recommended
+	•	Repo name: qel-spec
+	•	Owner: neutral org (e.g. believers-commons or qel-org)
+
+Description
+
+Canonical specification for the Quantum Expression Language (QEL)
+
+⸻
+
+3. Canonical Repository Structure (Do Not Deviate)
+
+qel-spec/
+├── README.md
+├── CHARTER.md
+├── GOVERNANCE.md
+├── VERSIONING.md
+├── CHANGELOG.md
+│
+├── core/
+│   ├── README.md
+│   ├── grammar.ebnf
+│   ├── qel-core.schema.json
+│   ├── primitives.md
+│   └── canonical-ordering.md
+│
+├── examples/
+│   ├── salary-payment.json
+│   ├── factory-output.json
+│   ├── consent-grant.json
+│   ├── consent-revoke.json
+│   └── regulatory-filing.json
+│
+├── rfc/
+│   ├── README.md
+│   └── RFC-TEMPLATE.md
+│
+├── extensions/
+│   └── README.md
+│
+└── tests/
+    ├── valid/
+    └── invalid/
+
+This layout signals standards maturity immediately.
+
+⸻
+
+4. File-by-File: What Goes Where (Important)
+
+README.md (Entry Point)
+
+Contents:
+	•	One-paragraph description of QEL
+	•	Link to Charter
+	•	Link to Core Grammar
+	•	Statement of stability:
+“QEL Core v0.x is stable; breaking changes require Council ratification.”
+
+No tutorials here.
+
+⸻
+
+CHARTER.md
+
+Exactly what you already wrote.
+	•	No code blocks
+	•	No diagrams
+	•	This is constitutional text
+
+Treat it like a legal document.
+
+⸻
+
+GOVERNANCE.md
+
+Includes:
+	•	Stewardship Council
+	•	Decision thresholds
+	•	Dispute interpretation board
+	•	Extension approval process
+
+This prevents capture and ambiguity.
+
+⸻
+
+VERSIONING.md
+
+Defines:
+	•	MAJOR.MINOR
+	•	What constitutes a breaking change
+	•	Deprecation rules
+	•	Parser obligations
+
+This is critical for institutional adoption.
+
+⸻
+
+CHANGELOG.md
+
+Rules:
+	•	Chronological
+	•	Human-written
+	•	No auto-generation
+
+Example:
+
+## v0.1.0 — Initial Public Draft
+- Ratified QEL Charter
+- Defined core primitives
+- Published canonical JSON schema
+
+
+⸻
+
+5. The Core Directory (Language Itself)
+
+core/grammar.ebnf
+	•	Formal grammar
+	•	High-level EBNF
+	•	No implementation details
+
+This is for:
+	•	Parser writers
+	•	Academic review
+	•	Long-term stability
+
+⸻
+
+core/qel-core.schema.json
+
+This is the canonical JSON Schema.
+
+Rules:
+	•	Strict
+	•	Required fields explicit
+	•	additionalProperties carefully controlled
+	•	Version required
+
+This is what validators implement.
+
+⸻
+
+core/primitives.md
+
+Defines each primitive in normative language:
+	•	Definition
+	•	Required / optional fields
+	•	Interpretation rules
+	•	Non-examples
+
+This avoids future semantic fights.
+
+⸻
+
+core/canonical-ordering.md
+
+Defines:
+	•	Field ordering
+	•	Whitespace rules
+	•	Hashing expectations
+
+This enables:
+	•	Deterministic hashing
+	•	Evidence anchoring
+	•	Cross-language consistency
+
+⸻
+
+6. Examples Directory (Normative, Not Illustrative)
+
+Examples are test vectors, not demos.
+
+Each example must:
+	•	Validate against schema
+	•	Be signed (even mock)
+	•	Represent a real-world case
+
+These examples become:
+	•	Teaching material
+	•	Conformance tests
+	•	Legal references
+
+⸻
+
+7. RFC Directory (Controlled Evolution)
+
+rfc/README.md
+
+Explains:
+	•	How to propose changes
+	•	Who can submit
+	•	Review timelines
+	•	Decision authority
+
+RFC-TEMPLATE.md
+
+You already have this.
+This is how QEL evolves without chaos.
+
+⸻
+
+8. Tests Directory (Language Discipline)
+	•	tests/valid/ → must parse
+	•	tests/invalid/ → must fail
+
+This allows:
+	•	Independent implementations
+	•	Conformance checking
+	•	Objective correctness
+
+⸻
+
+9. Branching & Tags (Very Important)
+
+Branch rules
+	•	main → frozen spec
+	•	No force-push
+	•	Changes only via PR
+
+Tags
+	•	v0.1.0
+	•	v0.2.0
+	•	Never delete tags
+
+This mirrors ISO / ECMA discipline.
+
+⸻
+
+10. What NOT to Add Yet
+
+Do not include:
+	•	SDKs
+	•	Code
+	•	Validators
+	•	Dev portal content
+
+Those belong to STEP 3.
+
+This repo must remain:
+
+Slow, deliberate, and authoritative.
+
+⸻
+
+11. Success Criteria for Step 2
+
+Step 2 is complete when:
+	•	Another team can write a parser using only this repo
+	•	You can freeze it for 6 months without changes
+	•	Council governance is documented before conflict arises
+
+⸻
+
+12. Your Action Before Moving On
+
+Confirm:
+	1.	Repo structure is approved
+	2.	Governance-first approach is accepted
+	3.	Core is frozen pending v1.0
+
+⸻
+
+NEXT STEP (when you say “Next”)
+
+STEP 3 — Reference Implementation (qel-core)
+We will design:
+	•	Python reference parser
+	•	Canonical validator
+	•	CLI (qel validate, qel hash)
+	•	How it mirrors CPython’s role
+
+Say “Next” when ready.
