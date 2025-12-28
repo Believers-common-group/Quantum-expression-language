@@ -1,0 +1,345 @@
+Below is a formal, production-grade framework for preparing licenses to restructure NCLT companies using QEL, fully consistent with everything established earlier: constitutional cyber governance, IAS-style bureaucracy, observability-first design, ARC, and non-automation of authority.
+
+This is written so it can function simultaneously as:
+	•	a legal-structural blueprint,
+	•	a licensing framework,
+	•	and a court-legible governance model.
+
+You can treat this as a standalone chapter titled:
+
+“QEL-Based Licensing for NCLT Restructuring and Corporate Rehabilitation”
+
+⸻
+
+QEL-BASED LICENSING FOR NCLT RESTRUCTURING
+
+An Observability-First Governance Framework
+
+⸻
+
+1. The NCLT Problem (Structural, Not Legal)
+
+The National Company Law Tribunal already operates on sound legal principles:
+	•	judicial supervision,
+	•	creditor protection,
+	•	statutory hierarchy,
+	•	procedural fairness.
+
+What fails in practice is observability, not law.
+
+Structural Gaps in Current Restructuring
+	•	Authority is fragmented across RP, CoC, auditors, valuers
+	•	Decisions are spread across filings, emails, affidavits
+	•	Timelines are reconstructed post-facto
+	•	Discretion is exercised but weakly recorded
+	•	Courts receive outcomes, not decision lineage
+
+This creates:
+	•	litigation drag
+	•	credibility disputes
+	•	resolution failure
+	•	post-approval challenges
+
+QEL addresses none of the law
+and all of the observability.
+
+⸻
+
+2. Core Principle: NCLT Restructuring Is a Licensed State of Authority
+
+Restructuring is not business-as-usual corporate action.
+
+It is a court-sanctioned deviation from normal corporate governance.
+
+Therefore:
+
+Every actor in an NCLT process operates under a temporary, scoped, court-derived license.
+
+QEL’s role is to express, bind, and observe those licenses.
+
+⸻
+
+3. The QEL Restructuring License (QRL)
+
+3.1 What a QRL Is
+
+A QEL Restructuring License (QRL) is a machine-verifiable, court-referenced authority envelope that defines:
+	•	who may act,
+	•	in what role,
+	•	under which order,
+	•	for what duration,
+	•	with what limits,
+	•	and with what observability obligations.
+
+It does not grant power.
+It records delegated authority.
+
+⸻
+
+3.2 Why a License Is Necessary (Court Logic)
+
+Courts already ask:
+	•	Who authorised this?
+	•	Under which order?
+	•	Was it within scope?
+	•	Was it time-bound?
+	•	Was it disclosed?
+
+QRL answers these questions natively.
+
+⸻
+
+4. License Classes in NCLT Restructuring
+
+Each license is role-specific and non-overlapping.
+
+4.1 Resolution Professional License (QRL-RP)
+
+Authority Source
+	•	NCLT admission order
+	•	Insolvency & Bankruptcy Code reference
+
+Scope
+	•	Custodianship of debtor
+	•	Process administration
+	•	Information collation
+
+Hard Limits
+	•	No asset alienation beyond approval
+	•	No preferential treatment
+	•	No discretionary business expansion
+
+QEL Mapping
+	•	Actor: did:qrl:rp:<case-id>
+	•	Authority: NCLT order reference
+	•	Context: court-supervised state
+
+⸻
+
+4.2 Committee of Creditors License (QRL-CoC)
+
+Authority Source
+	•	Statutory creditor rights
+	•	Court-recognised constitution
+
+Scope
+	•	Commercial decisions
+	•	Plan evaluation
+	•	Voting
+
+Limits
+	•	No operational execution
+	•	No unilateral modification
+
+QEL Mapping
+	•	Actor: collective actor with voting expressions
+	•	Consent: weighted, recorded
+	•	Evidence: minutes, votes
+
+⸻
+
+4.3 Valuer / Auditor License (QRL-VA)
+
+Authority Source
+	•	Court / RP appointment
+
+Scope
+	•	Valuation
+	•	Audit
+	•	Verification
+
+Limits
+	•	No decision authority
+	•	No plan advocacy
+
+QEL Role
+	•	Evidence producer only
+	•	High confidence, no authority
+
+⸻
+
+4.4 Management-in-Suspension License (QRL-MS)
+
+Authority Source
+	•	Statutory continuation
+	•	Court-limited recognition
+
+Scope
+	•	Operational continuity
+	•	Asset preservation
+
+Limits
+	•	No strategic decisions
+	•	No asset disposition
+
+QEL Importance
+	•	Explicitly marks non-authority
+	•	Prevents shadow governance
+
+⸻
+
+4.5 Successful Resolution Applicant License (QRL-RA)
+
+Authority Source
+	•	Approved resolution plan
+	•	NCLT confirmation
+
+Scope
+	•	Transitional actions
+	•	Conditional execution
+
+Limits
+	•	Subject to milestones
+	•	Revocable on breach
+
+QEL Role
+	•	Time-phased authority
+	•	Milestone-linked expressions
+
+⸻
+
+5. License Structure (Canonical QEL Form)
+
+A QRL is a QEL expression of type license.
+
+5.1 Canonical Fields (Illustrative)
+
+{
+  "qel_version": "0.1",
+  "type": "license",
+  "id": "qel://license/nclt/ibc-123/qrp-001",
+  "issued_at": "2025-01-12T10:30:00Z",
+  "actor": {
+    "id": "did:qrl:rp:ibc-123",
+    "role": "resolution_professional"
+  },
+  "authority": {
+    "issuer": "NCLT-Mumbai-Bench",
+    "order_ref": "CP(IB) No. 123/MB/2024",
+    "statute": "IBC 2016 §16"
+  },
+  "scope": {
+    "allowed": ["custody", "process_admin"],
+    "prohibited": ["asset_sale_without_coc"]
+  },
+  "time": {
+    "valid_from": "2025-01-12",
+    "valid_to": "2025-07-11"
+  },
+  "context": {
+    "jurisdiction": "India",
+    "court_supervised": true
+  },
+  "evidence": {
+    "attachments": ["ipfs://order.pdf"]
+  },
+  "signatures": [
+    {
+      "signer": "registry@nclt.gov.in",
+      "type": "institutional"
+    }
+  ]
+}
+
+This is court-legible and machine-verifiable.
+
+⸻
+
+6. File, Process, and License Coupling
+
+In IAS terms:
+	•	File = restructuring case
+	•	Notes = QEL expressions
+	•	Orders = attested expressions
+	•	License = authority envelope
+
+No workflow is replaced.
+Only the semantic binding is added.
+
+⸻
+
+7. Observability During the Resolution Period
+
+Every major action emits a QEL expression:
+	•	valuation report submission
+	•	CoC vote
+	•	plan modification
+	•	objection
+	•	delay
+	•	emergency approval
+
+This creates:
+	•	live auditability
+	•	clean judicial record
+	•	minimal post-facto litigation
+
+⸻
+
+8. Court Interaction Model
+
+What the Court Sees
+	•	License scopes
+	•	Authority chains
+	•	Deviations with context
+	•	Timeline integrity
+
+What the Court Does Not See
+	•	dashboards
+	•	AI scores
+	•	internal system logs
+
+This preserves judicial independence.
+
+⸻
+
+9. Post-Approval & Transition Governance
+
+Once resolution is approved:
+	•	QRLs expire
+	•	New corporate licenses activate
+	•	Legacy expressions remain immutable
+
+This avoids:
+	•	authority leakage
+	•	retroactive disputes
+	•	shadow continuation
+
+⸻
+
+10. Why This Is Constitutionally Safe
+	•	Authority remains judicial
+	•	Discretion is observable
+	•	Rights are preserved
+	•	Review remains intact
+	•	No automation of judgment
+
+QEL strengthens courts; it does not replace them.
+
+⸻
+
+11. What This Enables (Without Forcing)
+	•	Faster confidence for courts
+	•	Reduced litigation post-approval
+	•	Clear accountability for RPs
+	•	Protection for officers acting in good faith
+	•	Institutional memory for large restructurings
+
+⸻
+
+12. Final Statement (NCLT Context)
+
+Corporate restructuring is not a commercial workflow; it is a court-supervised reallocation of power.
+QEL exists to make that power visible, bounded, and reviewable.
+
+⸻
+
+Next steps I can execute immediately
+
+If you want, I can now:
+	1.	Draft actual license templates (RP, CoC, RA) ready for filing
+	2.	Create a pilot architecture for one NCLT bench
+	3.	Write a court note / practice direction draft
+	4.	Map this to IBC sections line-by-line
+	5.	Design a Genesis / Warden implementation layer
+
+Say the number and I’ll proceed.

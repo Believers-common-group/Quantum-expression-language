@@ -1,0 +1,285 @@
+Excellent.
+We now move to STEP 3 — this is the moment QEL becomes operationally real.
+
+⸻
+
+STEP 3 — Reference Implementation (qel-core)
+
+(Equivalent to CPython for Python, not a framework, not a product)
+
+This step answers one decisive question:
+
+If two independent teams implement QEL, how do we ensure they behave the same way?
+
+The answer is a reference implementation.
+
+⸻
+
+1. Purpose of the Reference Implementation
+
+qel-core exists to:
+	•	Define correct behavior, not performance
+	•	Remove ambiguity from the written spec
+	•	Provide a neutral arbiter in disputes
+	•	Enable conformance across languages
+
+It is not:
+	•	The fastest implementation
+	•	The only implementation
+	•	A production runtime
+	•	A framework
+
+Think of it as the ruler, not the factory.
+
+⸻
+
+2. Language Choice (Why Python First)
+
+Why Python
+	•	Universally readable
+	•	Trusted by institutions
+	•	Dominant in audit, data, ML, compliance
+	•	Easy to reason about correctness
+
+This mirrors history:
+	•	Python → CPython
+	•	JavaScript → V8 (later)
+	•	JSON Schema → Python & JS refs
+
+Other languages come after correctness is fixed.
+
+⸻
+
+3. Repository Identity
+
+Name
+
+qel-core
+
+Description
+
+Reference implementation of the Quantum Expression Language (QEL)
+
+Ownership
+
+Same neutral org as qel-spec
+
+⸻
+
+4. Canonical Repository Structure
+
+qel-core/
+├── README.md
+├── LICENSE
+├── pyproject.toml
+│
+├── qel/
+│   ├── __init__.py
+│   ├── version.py
+│   ├── errors.py
+│   ├── schema.py
+│   ├── canonicalize.py
+│   ├── validate.py
+│   ├── hash.py
+│   └── signatures.py
+│
+├── cli/
+│   ├── __init__.py
+│   └── main.py
+│
+├── tests/
+│   ├── test_valid.py
+│   ├── test_invalid.py
+│   └── test_canonical.py
+│
+└── docs/
+    └── behavior.md
+
+This layout communicates seriousness and restraint.
+
+⸻
+
+5. Core Responsibilities (Strict Scope)
+
+qel-core MUST do the following — no more, no less.
+
+5.1 Version Enforcement
+	•	qel_version required
+	•	Reject unknown major versions
+	•	Warn (not fail) on newer minor versions
+
+⸻
+
+5.2 Schema Validation
+	•	Validate against canonical JSON Schema from qel-spec
+	•	No extensions unless explicitly allowed
+	•	Clear, deterministic error messages
+
+⸻
+
+5.3 Canonicalization
+
+Defines:
+	•	Field ordering
+	•	Removal of insignificant whitespace
+	•	Normalization of timestamps (ISO-8601)
+	•	Deterministic output
+
+This enables:
+	•	Hashing
+	•	Evidence anchoring
+	•	Replay safety
+
+⸻
+
+5.4 Hashing
+	•	Hash canonicalized form only
+	•	Default: SHA-256
+	•	Output stable across platforms
+
+⸻
+
+5.5 Signature Presence (Not Crypto Enforcement Yet)
+	•	Verify that required signatures exist
+	•	Verify signer fields are structurally valid
+	•	Do not enforce cryptographic trust chains (yet)
+
+Why:
+
+Early enforcement = adoption friction
+Structural correctness first
+
+⸻
+
+6. CLI Interface (Developer Contract)
+
+Command: qel validate
+
+qel validate salary.json
+
+Output:
+	•	✅ valid
+	•	❌ invalid + reason
+	•	⚠️ warnings (deprecated fields, future versions)
+
+⸻
+
+Command: qel canonicalize
+
+qel canonicalize input.json > canonical.json
+
+Guarantee:
+	•	Byte-for-byte identical output for identical meaning
+
+⸻
+
+Command: qel hash
+
+qel hash salary.json
+
+Guarantee:
+	•	Same hash everywhere
+	•	Based only on canonical form
+
+⸻
+
+7. Error Model (Very Important)
+
+Errors must be:
+	•	Explicit
+	•	Deterministic
+	•	Human-readable
+
+Examples:
+	•	MissingRequiredFieldError: actor.id
+	•	UnsupportedMajorVersionError: qel_version=2.0
+	•	InvalidAuthorityStructureError
+
+This matters for:
+	•	Audits
+	•	Education
+	•	Institutional debugging
+
+⸻
+
+8. Tests = Normative Behavior
+
+Tests in qel-core are normative, not illustrative.
+
+Rule:
+
+If the test says it fails, the spec means it fails.
+
+Test sources
+	•	Import examples from qel-spec/examples
+	•	Import invalid cases from qel-spec/tests/invalid
+
+This locks spec ↔ implementation consistency.
+
+⸻
+
+9. Documentation: docs/behavior.md
+
+This file explains:
+	•	Edge cases
+	•	Interpretation choices
+	•	Why decisions were made
+
+This prevents:
+	•	Silent divergence
+	•	Re-litigation of old issues
+
+⸻
+
+10. Versioning & Release Discipline
+	•	Version matches spec: 0.1.x
+	•	Patch releases only
+	•	No breaking behavior without spec change
+	•	Tag every release
+
+This mirrors CPython discipline.
+
+⸻
+
+11. What We Explicitly Do NOT Do (Yet)
+
+Do NOT include:
+	•	Database storage
+	•	Networking
+	•	APIs
+	•	Ledger anchoring
+	•	UI
+	•	Plugins
+
+Those are STEP 4+ concerns.
+
+⸻
+
+12. Success Criteria for Step 3
+
+Step 3 is complete when:
+	•	Two independent devs validate the same file identically
+	•	A regulator can run qel validate without explanation
+	•	The implementation can remain unchanged for months
+
+⸻
+
+13. Your Action Before Proceeding
+
+Confirm:
+	1.	Python-first reference is acceptable
+	2.	Scope discipline is approved
+	3.	CLI contract is approved
+
+⸻
+
+NEXT STEP (when you say “Next”)
+
+STEP 4 — Package Distribution & Ecosystem Presence
+We will cover:
+	•	How QEL appears on pip and npm
+	•	Naming conventions
+	•	Trust signals
+	•	How this mirrors npm / PyPI / crates.io
+
+Say “Next” when ready.

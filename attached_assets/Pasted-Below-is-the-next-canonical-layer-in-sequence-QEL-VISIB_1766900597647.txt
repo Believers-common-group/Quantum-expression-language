@@ -1,0 +1,320 @@
+Below is the next canonical layer in sequence:
+
+QEL VISIBILITY, ACCESS & DISCLOSURE MODEL
+
+(Public Layer, Restricted Expressions, Constitutional Safety)
+
+This section completes the question “QEL is a public layer — how is visibility actually governed?”
+It is normative, institution-safe, and legally defensible.
+
+⸻
+
+1. The Core Distinction (Lock This)
+
+QEL is public by language, not by exposure.
+
+So we separate three things cleanly:
+	1.	Semantic publicness (always public)
+	2.	Expression visibility (policy-bound)
+	3.	Evidence disclosure (procedural, not automatic)
+
+Failure to separate these is where most “open data” and “AI transparency” efforts collapse.
+
+⸻
+
+2. Why Visibility Must Be Explicit (Institutional Reality)
+
+Institutions already operate with layered visibility:
+	•	Cabinet notes
+	•	File notings
+	•	Classified annexures
+	•	Sealed covers
+	•	In-camera proceedings
+
+Digital systems usually destroy this subtlety.
+
+QEL restores it explicitly.
+
+⸻
+
+3. QEL Visibility Classes (Canonical)
+
+Every QEL expression MUST declare a visibility class.
+
+This is not optional for institutional deployments.
+
+3.1 Visibility Enum (Normative)
+
+"visibility": {
+  "class": "public | institutional | restricted | confidential | sealed",
+  "basis": "statutory | court_order | policy | security | privacy",
+  "review_after": "YYYY-MM-DD | null"
+}
+
+This field is non-negotiable for algorithmic governance use.
+
+⸻
+
+4. The Five Visibility Classes (Explained)
+
+4.1 PUBLIC
+
+Who can see
+	•	Anyone
+
+Typical use
+	•	Policies
+	•	Notifications
+	•	Non-personal aggregate actions
+	•	Public procurement awards (after finalisation)
+
+Legal analogue
+	•	Gazette notifications
+
+QEL rule
+	•	No personal data
+	•	No sensitive evidence
+	•	Authority always explicit
+
+⸻
+
+4.2 INSTITUTIONAL (Default)
+
+Who can see
+	•	Officers within jurisdiction
+	•	Auditors
+	•	Courts
+
+Typical use
+	•	File notings
+	•	Internal recommendations
+	•	Algorithmic suggestions
+	•	Inspection reports
+
+Legal analogue
+	•	Government files
+
+QEL rule
+	•	Public meaning
+	•	Controlled access
+	•	Discoverable via due process
+
+This is the default class for most QEL expressions.
+
+⸻
+
+4.3 RESTRICTED
+
+Who can see
+	•	Explicitly authorised roles only
+
+Typical use
+	•	Vigilance inputs
+	•	Sensitive economic decisions
+	•	Competitive procurement stages
+	•	Personal data–bearing actions
+
+Legal analogue
+	•	Restricted files
+
+QEL rule
+	•	Visibility is role-bound
+	•	Access events themselves emit QEL expressions
+
+This prevents silent leaks and shadow access.
+
+⸻
+
+4.4 CONFIDENTIAL
+
+Who can see
+	•	Named authorities only
+
+Typical use
+	•	Intelligence inputs
+	•	Early-stage investigations
+	•	National security–adjacent matters
+	•	Market-sensitive information
+
+Legal analogue
+	•	Confidential / Secret files
+
+QEL rule
+	•	Evidence always hashed
+	•	Content disclosure only via procedure
+	•	Meaning remains inspectable by courts
+
+⸻
+
+4.5 SEALED
+
+Who can see
+	•	Court only (or authority specified)
+
+Typical use
+	•	Sealed cover submissions
+	•	Witness protection
+	•	Sensitive restructuring (e.g., NCLT edge cases)
+
+Legal analogue
+	•	Sealed covers / in-camera material
+
+QEL rule
+	•	Existence is public
+	•	Content is inaccessible without order
+	•	Even administrators cannot override
+
+This is critical for constitutional trust.
+
+⸻
+
+5. Visibility ≠ Authority (Important Separation)
+
+Visibility controls who can read.
+Authority controls who can act.
+
+An expression may be:
+	•	highly visible
+	•	but legally powerless
+
+Or:
+	•	tightly sealed
+	•	but decisive when unsealed
+
+QEL enforces this separation structurally.
+
+⸻
+
+6. Evidence Handling (Most Misunderstood Area)
+
+6.1 Evidence Is Never “Public by Default”
+
+In QEL:
+	•	Evidence is referenced
+	•	Hashed
+	•	Escrowed
+
+"evidence": {
+  "hash": "sha256:…",
+  "location": "escrow://court-approved",
+  "disclosure": "on_order_only"
+}
+
+This mirrors:
+	•	forensic procedure
+	•	audit practice
+	•	court evidence rules
+
+⸻
+
+6.2 Evidence Disclosure Is a Process, Not a Field
+
+Disclosure happens via:
+	•	RTI
+	•	Court direction
+	•	Audit requisition
+	•	Statutory demand
+
+Each disclosure event emits another QEL expression.
+
+This creates:
+	•	traceability
+	•	accountability
+	•	deterrence against misuse
+
+⸻
+
+7. Algorithmic Governance & Visibility (Critical)
+
+For algorithmic systems:
+
+Stage	Visibility
+Model existence	Public
+Use of algorithm	Institutional
+Recommendation output	Institutional
+Training data	Restricted
+Weights / internals	Not required
+Final decision	Public / Institutional
+
+This prevents:
+	•	algorithm worship
+	•	trade secret overreach
+	•	“black box decided” defenses
+
+⸻
+
+8. RTI, Privacy & Data Protection Compatibility
+
+RTI
+	•	QEL improves RTI compliance by locating records
+	•	Does not auto-disclose content
+
+Privacy
+	•	Personal data can exist in QEL without exposure
+	•	Visibility class enforces minimisation
+
+Data Protection
+	•	QEL expressions can reference erased data
+	•	Meaning survives deletion
+
+This is a major advantage over logs and databases.
+
+⸻
+
+9. Access Itself Is Observable (Key Feature)
+
+Every access to a non-public expression can emit:
+
+{
+  "type": "access_event",
+  "actor": "did:officer:xyz",
+  "target": "qel://expression/123",
+  "authority": "audit_request",
+  "time": "…"
+}
+
+This creates:
+	•	deterrence
+	•	accountability
+	•	institutional trust
+
+⸻
+
+10. What This Prevents (Explicitly)
+	•	Mass data dumping
+	•	Weaponised transparency
+	•	Selective leaks
+	•	Dashboard populism
+	•	Secret algorithmic governance
+
+Visibility becomes governed, not politicised.
+
+⸻
+
+11. Canonical One-Liner (Visibility Doctrine)
+
+In QEL, meaning is public, authority is explicit, visibility is governed, and disclosure is procedural.
+
+⸻
+
+12. Where This Fits in the Larger Stack
+
+You now have:
+	1.	QEL as a public semantic layer
+	2.	ARC for who may act
+	3.	Visibility classes for who may see
+	4.	Evidence procedure for what may be disclosed
+	5.	Courts as final arbiters
+
+This completes the constitutional safety loop.
+
+⸻
+
+Next natural steps (pick one)
+	1.	Draft the public license for QEL (CC0 vs Standards Covenant)
+	2.	Formalise QEL expression types (decision, recommendation, license, audit, access)
+	3.	Map QEL to RTI & data protection law explicitly
+	4.	Design a national QEL registry (non-centralised)
+	5.	Write the “misuse prevention” doctrine
+
+Say the number.

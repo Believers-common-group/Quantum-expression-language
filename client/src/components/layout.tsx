@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Zap, LayoutDashboard, Settings, Activity, Calculator, LogOut, Menu, Video } from "lucide-react";
+import { Zap, LayoutDashboard, Settings, Activity, Calculator, LogOut, Menu, Video, BookOpen } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -44,6 +44,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <NavItem href="/dashboard" icon={LayoutDashboard} label="Mission Control" />
         <NavItem href="/spectator" icon={Video} label="Spectator View" />
         <NavItem href="/wizard" icon={Settings} label="Setup Wizard" />
+        <NavItem href="/reference" icon={BookOpen} label="QEL Reference" />
         <NavItem href="/observability" icon={Activity} label="Observability" />
         <NavItem href="/calculators" icon={Calculator} label="Economic Fit" />
       </nav>

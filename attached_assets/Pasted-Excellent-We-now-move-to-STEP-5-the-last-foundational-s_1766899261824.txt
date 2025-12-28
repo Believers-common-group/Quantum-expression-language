@@ -1,0 +1,261 @@
+Excellent.
+We now move to STEP 5 — the last foundational step.
+
+This is where QEL becomes learnable and usable at scale without compromising its status as a language standard.
+
+⸻
+
+STEP 5 — Developer Portal & Education Layer
+
+(How QEL is taught, documented, and adopted — without becoming a “product”)
+
+This step answers a subtle but critical question:
+
+How do people learn and use QEL without confusing education with authority?
+
+If Step 5 is done correctly:
+	•	The spec remains the source of truth
+	•	The portal accelerates adoption
+	•	Creators, developers, and institutions converge
+	•	QEL avoids the “framework lock-in” trap
+
+⸻
+
+1. Core Principle (Do Not Violate This)
+
+The Developer Portal is not the language.
+It is a guided interface to the language.
+
+In other words:
+	•	Spec = law
+	•	Reference implementation = court
+	•	Portal = school
+
+Schools do not rewrite laws.
+
+⸻
+
+2. Portal Positioning (Language-first, Platform-second)
+
+Canonical name options
+	•	QEL Developer Portal
+	•	QEL Academy
+	•	QEL Commons
+
+Avoid:
+	•	“QEL Platform”
+	•	“QEL OS”
+	•	“QEL Cloud”
+
+Those imply ownership and control.
+
+⸻
+
+3. Clear Separation of Concerns (Very Important)
+
+The portal must be split into four visibly separate sections:
+
+/spec        → Read-only language reference (mirrors qel-spec)
+/docs        → How to use tools (qel-core, CLI)
+/learn       → Structured education (EdTech)
+/community   → Creators, RFCs, governance visibility
+
+This mirrors:
+	•	python.org (language)
+	•	docs.python.org (usage)
+	•	tutorial sites (learning)
+	•	PEP index (governance)
+
+⸻
+
+4. /spec — Read-Only Language Mirror
+
+Purpose
+	•	Make the spec browsable
+	•	Not editable
+	•	Not simplified
+
+Contains
+	•	Charter
+	•	Grammar
+	•	Primitives
+	•	Versioning
+	•	Extensions index
+
+Rules
+	•	No comments
+	•	No annotations
+	•	No “simplified explanations”
+
+This page is for:
+	•	Regulators
+	•	Architects
+	•	Auditors
+	•	Standards bodies
+
+⸻
+
+5. /docs — Tooling & Implementation Guides
+
+This is where developers go after reading the spec.
+
+Contents
+	•	Installing qel-core
+	•	CLI usage
+	•	Validation examples
+	•	Canonicalization & hashing
+	•	Common errors and meanings
+
+Tone
+	•	Precise
+	•	Dry
+	•	Implementation-focused
+
+Example pages
+	•	“Validating a QEL Expression”
+	•	“Canonical Ordering Explained”
+	•	“Handling Deprecated Fields”
+
+No philosophy here — just usage.
+
+⸻
+
+6. /learn — EdTech Layer (Structured Learning)
+
+This is where you expand reach without weakening rigor.
+
+Learning Tracks (recommended)
+
+Track 1 — QEL Foundations
+	•	What is an expression?
+	•	Why authority and consent matter
+	•	Reading canonical examples
+
+Track 2 — Applied QEL
+	•	Salary payment modeling
+	•	Manufacturing provenance
+	•	Consent grant & revocation
+
+Track 3 — Institutional QEL
+	•	Regulatory filings
+	•	Audit snapshots
+	•	Dispute interpretation
+
+Each lesson includes:
+	•	One real QEL artifact
+	•	One validation task
+	•	One reflection (legal / governance lens)
+
+🎓 Output:
+	•	Verifiable learning credential
+	•	QEL-signed completion record
+
+⸻
+
+7. /community — Creators, RFCs, Governance
+
+This is how QEL avoids stagnation.
+
+Contains
+	•	RFC index & status
+	•	Stewardship Council
+	•	Interpretation decisions
+	•	Community-contributed examples
+	•	Calls for pilots
+
+Creators can:
+	•	Publish annotated QEL cases
+	•	Propose extensions (RFCs)
+	•	Build teaching material
+	•	Earn reputation through correctness
+
+This is not a forum.
+It’s a record of contribution.
+
+⸻
+
+8. What the Portal Must NOT Do
+
+Explicitly do not include:
+	•	Opinionated frameworks
+	•	Business logic helpers
+	•	Proprietary workflows
+	•	Monetized APIs
+	•	Token gating
+
+Those belong outside the language ecosystem.
+
+⸻
+
+9. How the Portal Aligns With npm / Django / Rails (Mentally)
+
+Ecosystem	Role	QEL Equivalent
+python.org	Language	qel.org
+docs.python.org	Docs	/docs
+Django REST docs	Framework learning	(future, external)
+npm	Distribution	PyPI / npm
+Coursera	Education	/learn (but lighter, verifiable)
+
+This alignment makes QEL feel familiar, not foreign.
+
+⸻
+
+10. Minimal Viable Portal (Do This First)
+
+Before scale, build only this:
+	•	/ — language landing page
+	•	/spec — frozen mirror
+	•	/docs — qel-core usage
+	•	/learn/foundations — 5 lessons
+	•	/community — governance + RFC index
+
+Nothing more.
+
+⸻
+
+11. Success Criteria for Step 5
+
+Step 5 is complete when:
+	•	A student can learn QEL without reading the spec
+	•	A regulator can ignore the learning layer entirely
+	•	A developer knows exactly where authority lives
+	•	No one confuses QEL with a startup product
+
+⸻
+
+12. What Comes After Step 5 (Preview Only)
+
+Once Steps 1–5 are done, QEL is a real language ecosystem.
+
+Next (later phases):
+	•	STEP 6 — Creator reputation & credentials
+	•	STEP 7 — Institutional pilots
+	•	STEP 8 — Framework integrations (Django, Rails, FastAPI)
+	•	STEP 9 — Extension registry at scale
+
+But those are optional.
+Steps 1–5 are foundational and sufficient.
+
+⸻
+
+Final Checkpoint (Important)
+
+At this point:
+	•	QEL is a language ✔
+	•	QEL has a spec ✔
+	•	QEL has a reference implementation ✔
+	•	QEL exists in developer ecosystems ✔
+	•	QEL is teachable without dilution ✔
+
+That is exactly how Python, JSON, and SQL became durable.
+
+⸻
+
+If you want, next I can:
+	•	Draft the exact sitemap & IA for the portal
+	•	Write the first 5 foundation lessons
+	•	Design the credential & reputation model
+	•	Produce the portal UI wireframe (textual)
+	•	Create the launch announcement + FAQ
+
+Say what you want next — we’re now past the hard part.
