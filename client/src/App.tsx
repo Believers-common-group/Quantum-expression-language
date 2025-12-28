@@ -11,6 +11,7 @@ import Observability from "@/pages/observability";
 import Calculators from "@/pages/calculators";
 import SpectatorView from "@/pages/spectator";
 import Reference from "@/pages/reference";
+import Warden from "@/pages/warden";
 
 function Router() {
   return (
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/" component={Login} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/spectator" component={SpectatorView} />
+      <Route path="/warden" component={Warden} />
       <Route path="/reference" component={Reference} />
       <Route path="/wizard" component={Wizard} />
       <Route path="/observability" component={Observability} />
