@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Zap, LayoutDashboard, Settings, Activity, Calculator, LogOut, Menu, Video, BookOpen, ShieldAlert } from "lucide-react";
+import { Zap, LayoutDashboard, Settings, Activity, Calculator, LogOut, Menu, Video, BookOpen, ShieldAlert, Network } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -46,6 +46,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <NavItem href="/warden" icon={ShieldAlert} label="The Warden" />
         <NavItem href="/wizard" icon={Settings} label="Setup Wizard" />
         <NavItem href="/reference" icon={BookOpen} label="QEL Reference" />
+        <NavItem href="/architecture" icon={Network} label="Architecture" />
         <NavItem href="/observability" icon={Activity} label="Observability" />
         <NavItem href="/calculators" icon={Calculator} label="Economic Fit" />
       </nav>
