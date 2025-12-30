@@ -13,12 +13,16 @@ import SpectatorView from "@/pages/spectator";
 import Reference from "@/pages/reference";
 import Warden from "@/pages/warden";
 import ArchitectureExplainer from "@/pages/architecture";
+import Workspace from "@/pages/workspace";
+import Briefing from "@/pages/briefing";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Login} />
       <Route path="/dashboard" component={Dashboard} />
+      <Route path="/workspace" component={Workspace} />
+      <Route path="/briefing" component={Briefing} />
       <Route path="/spectator" component={SpectatorView} />
       <Route path="/warden" component={Warden} />
       <Route path="/reference" component={Reference} />
