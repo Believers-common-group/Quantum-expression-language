@@ -1,0 +1,422 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Calculator, 
+  Activity, 
+  RefreshCw, 
+  ShieldCheck, 
+  AlertTriangle, 
+  Database,
+  QrCode,
+  Layers,
+  Zap,
+  Sparkles,
+  MessageSquare
+} from 'lucide-react';
+
+const SystemicInterface = () => {
+  // API Key Configuration
+  const apiKey = ""; // System provides this automatically
+
+  // System State
+  const [systemLoad, setSystemLoad] = useState(35);
+  const [entropy, setEntropy] = useState(12);
+  const [stability, setStability] = useState(100);
+  const [feedbackLoopActive, setFeedbackLoopActive] = useState(false);
+  const [generatedResolutions, setGeneratedResolutions] = useState<any[]>([]);
+  const [activeResolution, setActiveResolution] = useState<any>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  
+  // AI Features State
+  const [oracleAdvice, setOracleAdvice] = useState<string | null>(null);
+  const [isOracleThinking, setIsOracleThinking] = useState(false);
+
+  // Simulation Refs
+  const intervalRef = useRef<any>(null);
+
+  // Helper: Call Gemini API
+  const callGemini = async (prompt: string) => {
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          })
+        }
+      );
+      const data = await response.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || "DATA CORRUPTION DETECTED";
+    } catch (error) {
+      console.error("AI Core Error:", error);
+      return "CONNECTION_LOST";
+    }
+  };
+
+  // Mechanics: The System Loop
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      setEntropy(prev => {
+        const naturalDecay = 0.5;
+        const loadFactor = systemLoad > 70 ? 1.5 : 0;
+        let newEntropy = prev + naturalDecay + loadFactor;
+
+        if (feedbackLoopActive) {
+          if (newEntropy > 50) return newEntropy - 5; 
+        }
+        
+        return Math.min(newEntropy, 100);
+      });
+
+      setStability(prev => {
+        const targetStability = 100 - entropy;
+        const diff = targetStability - prev;
+        return prev + (diff * 0.1);
+      });
+
+    }, 1000);
+
+    return () => clearInterval(intervalRef.current);
+  }, [systemLoad, entropy, feedbackLoopActive]);
+
+  // Handler: Generate a Resolution with AI Context
+  const handleResolve = async () => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+    
+    // AI Generation Step
+    const prompt = `Context: Sci-fi computer system. 
+    Current State: System Load ${systemLoad}%, Entropy ${Math.floor(entropy)}%, Stability ${Math.floor(stability)}%. 
+    Task: Generate a very short, cryptic, cool technobabble log message (max 6 words) describing the action taken to fix the system. 
+    Examples: "Flushing quantum buffer capacitors", "Re-aligning heuristic core matrix", "Dumping static memory cache".`;
+    
+    const aiLog = await callGemini(prompt);
+
+    setTimeout(() => {
+      const timestamp = new Date().toLocaleString('en-US', {
+        month: 'long', day: 'numeric', year: 'numeric', 
+        hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true
+      });
+
+      const inputVal = Math.floor(systemLoad);
+      const outputVal = Math.floor(systemLoad * (stability/100));
+
+      const newRes = {
+        id: Math.random().toString(36).substr(2, 9).toUpperCase(),
+        timestamp,
+        operation: `${inputVal} → ${outputVal}`,
+        status: 'RESOLVE GENERATED',
+        aiLog: aiLog.replace(/['"]+/g, ''), // Clean quotes
+        systemState: { load: inputVal, entropy: Math.floor(entropy) }
+      };
+
+      setActiveResolution(newRes);
+      setGeneratedResolutions(prev => [newRes, ...prev].slice(0, 5));
+      
+      // Reduce Entropy
+      setEntropy(prev => Math.max(0, prev - 30));
+      setIsProcessing(false);
+    }, 500); // Small artificial delay for effect
+  };
+
+  // Handler: Consult Oracle (AI Advice)
+  const handleConsultOracle = async () => {
+    if (isOracleThinking) return;
+    setIsOracleThinking(true);
+    setOracleAdvice(null);
+
+    const prompt = `You are the "System Core AI" of a dashboard. 
+    Current Telemetry: Load is ${systemLoad}% (0-100), Entropy is ${Math.floor(entropy)}% (0-100). 
+    Task: Give a 1-sentence piece of cryptic, slightly robotic advice or warning to the human operator about the current state. 
+    Tone: If entropy is high (>60), be urgent/alarmed. If low, be calm/observational. Use 1 relevant emoji at the start.`;
+
+    const advice = await callGemini(prompt);
+    setOracleAdvice(advice);
+    setIsOracleThinking(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-8 font-sans selection:bg-cyan-500 selection:text-white">
+      
+      {/* Header */}
+      <header className="flex justify-between items-center mb-8 border-b border-slate-700 pb-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-cyan-500/10 rounded-lg border border-cyan-500/30">
+            <Layers className="text-cyan-400 w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold tracking-tight">Systemic Interface <span className="text-cyan-400">///</span> OS</h1>
+            <p className="text-xs text-slate-400 uppercase tracking-widest">Mechanics of Situations</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4 text-xs font-mono text-slate-400">
+          <span className="flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full ${feedbackLoopActive ? 'bg-green-500 animate-pulse' : 'bg-slate-600'}`}></span>
+            LOOP: {feedbackLoopActive ? 'ENGAGED' : 'IDLE'}
+          </span>
+          <span className="flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full ${isProcessing ? 'bg-amber-500 animate-pulse' : 'bg-slate-600'}`}></span>
+            PROC: {isProcessing ? 'BUSY' : 'READY'}
+          </span>
+        </div>
+      </header>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* LEFT COLUMN: System Controls & Monitor */}
+        <div className="lg:col-span-7 space-y-6">
+          
+          {/* Main Visualizer */}
+          <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6 relative overflow-hidden backdrop-blur-sm">
+            <div className="absolute top-0 right-0 p-4 opacity-20">
+              <Activity size={120} className="text-cyan-500" />
+            </div>
+            
+            <h2 className="text-sm font-semibold text-slate-300 mb-6 flex items-center gap-2">
+              <Database size={16} /> SYSTEM VARIABLES
+            </h2>
+
+            <div className="space-y-8 relative z-10">
+              {/* Load Control */}
+              <div>
+                <div className="flex justify-between mb-2">
+                  <label className="text-xs font-mono text-slate-400">SYSTEM LOAD (INPUT)</label>
+                  <span className="text-xs font-mono text-cyan-400">{systemLoad}%</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="0" max="100" 
+                  value={systemLoad} 
+                  onChange={(e) => setSystemLoad(parseInt(e.target.value))}
+                  className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500 hover:accent-cyan-400 transition-all"
+                />
+              </div>
+
+              {/* Entropy Monitor */}
+              <div>
+                <div className="flex justify-between mb-2">
+                  <label className="text-xs font-mono text-slate-400">ENTROPY (DISORDER)</label>
+                  <span className={`text-xs font-mono ${entropy > 60 ? 'text-red-400' : 'text-emerald-400'}`}>
+                    {Math.floor(entropy)}%
+                  </span>
+                </div>
+                <div className="h-2 w-full bg-slate-700 rounded-lg overflow-hidden">
+                  <div 
+                    className={`h-full transition-all duration-1000 ease-linear ${entropy > 60 ? 'bg-red-500' : 'bg-emerald-500'}`}
+                    style={{ width: `${entropy}%` }}
+                  ></div>
+                </div>
+                <p className="text-[10px] text-slate-500 mt-1">
+                  High load accelerates entropy. Use the Resolver Widget to restore order.
+                </p>
+              </div>
+
+              {/* Stability Output */}
+              <div>
+                <div className="flex justify-between mb-2">
+                  <label className="text-xs font-mono text-slate-400">SYSTEM STABILITY</label>
+                  <span className="text-xs font-mono text-indigo-400">{Math.floor(stability)}%</span>
+                </div>
+                <div className="flex gap-1 h-8">
+                  {[...Array(20)].map((_, i) => (
+                    <div 
+                      key={i}
+                      className={`flex-1 rounded-sm transition-all duration-500 ${
+                        i < (stability / 5) 
+                          ? 'bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]' 
+                          : 'bg-slate-700/30'
+                      }`}
+                    ></div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Mechanics Controls */}
+            <div className="mt-8 pt-6 border-t border-slate-700/50 flex flex-wrap gap-4">
+               <button 
+                onClick={() => setFeedbackLoopActive(!feedbackLoopActive)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all flex items-center gap-2
+                  ${feedbackLoopActive 
+                    ? 'bg-green-500/10 border-green-500 text-green-400' 
+                    : 'bg-slate-700/30 border-slate-600 text-slate-400 hover:bg-slate-700'
+                  }`}
+              >
+                <RefreshCw size={16} className={feedbackLoopActive ? 'animate-spin' : ''} />
+                {feedbackLoopActive ? 'Loop: ACTIVE' : 'Loop: DISABLED'}
+              </button>
+
+              <button 
+                onClick={handleResolve}
+                disabled={isProcessing}
+                className="px-6 py-2 rounded-lg text-sm font-bold bg-cyan-500 hover:bg-cyan-400 text-slate-900 transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(6,182,212,0.3)] disabled:opacity-50 disabled:cursor-not-allowed ml-auto"
+              >
+                {isProcessing ? <Zap size={16} className="animate-pulse"/> : <Sparkles size={16} />}
+                {isProcessing ? 'COMPUTING...' : 'EXECUTE RESOLVE'}
+              </button>
+            </div>
+          </div>
+
+          {/* AI Oracle Section */}
+          <div className="bg-slate-800/30 rounded-xl border border-slate-700/50 p-4">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-xs font-mono text-slate-400 uppercase flex items-center gap-2">
+                <MessageSquare size={14} /> System Oracle
+              </h3>
+              <button 
+                onClick={handleConsultOracle}
+                disabled={isOracleThinking}
+                className="text-[10px] bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 px-3 py-1 rounded-full border border-indigo-500/30 transition-colors flex items-center gap-1 disabled:opacity-50"
+              >
+                {isOracleThinking ? 'THINKING...' : '✨ CONSULT CORE AI'}
+              </button>
+            </div>
+            
+            <div className="min-h-[40px] flex items-center">
+              {oracleAdvice ? (
+                <p className="text-sm text-indigo-200 animate-in fade-in slide-in-from-top-2 italic">
+                  "{oracleAdvice}"
+                </p>
+              ) : (
+                <p className="text-xs text-slate-600 italic">
+                  {isOracleThinking ? "Querying neural subsystem..." : "The Oracle is silent. Request consultation for strategic advice."}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* System Log */}
+          <div className="bg-slate-900 rounded-xl border border-slate-800 p-4 h-48 overflow-y-auto">
+            <h3 className="text-xs font-mono text-slate-500 mb-2 uppercase">System Log</h3>
+            <div className="space-y-2 font-mono text-xs">
+              {generatedResolutions.map((res) => (
+                <div key={res.id} className="flex flex-col gap-1 text-slate-400 border-b border-slate-800/50 pb-2">
+                  <div className="flex justify-between">
+                     <span className="text-slate-600">[{res.timestamp.split(',')[1].trim()}]</span>
+                     <span className="text-cyan-500">ID:{res.id}</span>
+                  </div>
+                  <span className="text-emerald-400/80 italic pl-4 border-l-2 border-slate-800">
+                    &gt; {res.aiLog || "Standard Protocol"}
+                  </span>
+                </div>
+              ))}
+              <div className="flex gap-3 text-slate-500">
+                <span className="text-slate-600">[{new Date().toLocaleTimeString()}]</span>
+                <span>System monitoring active... waiting for user input.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: The Widget */}
+        <div className="lg:col-span-5 flex flex-col gap-6">
+          
+          <div className="bg-slate-800 rounded-xl border border-slate-700 p-1">
+             <div className="bg-slate-900/50 p-3 rounded-lg text-center mb-1">
+               <p className="text-xs text-slate-500 uppercase font-mono tracking-wider">Widget Output Preview</p>
+             </div>
+             
+             {/* THE WIDGET (Card Design) */}
+             <div className="relative w-full max-w-sm mx-auto bg-white text-slate-900 rounded-2xl shadow-2xl overflow-hidden transition-all duration-500 transform hover:scale-[1.02]">
+                
+                {/* Widget Header */}
+                <div className="bg-slate-100 p-4 border-b border-slate-200 flex justify-between items-start">
+                  <div className="p-2 bg-slate-900 rounded-lg text-white">
+                    <Calculator size={20} />
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">System Timestamp</p>
+                    <p className="text-xs font-mono font-medium text-slate-600">
+                      {activeResolution ? activeResolution.timestamp : "WAITING FOR INPUT..."}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Widget Body */}
+                <div className="p-8 min-h-[220px] flex flex-col justify-center items-center">
+                  {!activeResolution ? (
+                    <div className="text-center space-y-3 opacity-40">
+                      <div className="w-16 h-16 border-4 border-slate-300 border-t-slate-900 rounded-full animate-spin mx-auto"></div>
+                      <p className="font-mono text-sm">System Idle</p>
+                    </div>
+                  ) : (
+                    <div className="text-center w-full animate-in fade-in zoom-in duration-300">
+                       <p className="text-xs text-slate-400 uppercase tracking-widest mb-2">Operation Output</p>
+                       <h2 className="text-5xl font-black text-slate-900 tracking-tighter mb-2">
+                         {activeResolution.operation}
+                       </h2>
+                       
+                       {/* AI Protocol Line */}
+                       <div className="my-4 px-3 py-2 bg-slate-100 rounded text-center border border-slate-200">
+                         <p className="text-[10px] text-slate-400 uppercase mb-1">AI Protocol Enacted</p>
+                         <p className="font-mono text-xs text-cyan-700 font-bold">{activeResolution.aiLog}</p>
+                       </div>
+
+                       <div className="h-1 w-full bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50 mb-6"></div>
+                       
+                       <div className="grid grid-cols-2 gap-4 text-left bg-slate-50 p-4 rounded-lg border border-slate-100">
+                         <div>
+                           <p className="text-[10px] text-slate-400 uppercase">Input Load</p>
+                           <p className="font-mono font-bold">{activeResolution.systemState.load}%</p>
+                         </div>
+                         <div>
+                           <p className="text-[10px] text-slate-400 uppercase">Initial Entropy</p>
+                           <p className="font-mono font-bold">{activeResolution.systemState.entropy}%</p>
+                         </div>
+                       </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Widget Footer (Receipt Style) */}
+                <div className="bg-slate-50 p-6 border-t-2 border-dashed border-slate-200">
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className={`w-2 h-2 rounded-full ${activeResolution ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
+                        <p className="text-xs font-bold text-slate-400">STATUS</p>
+                      </div>
+                      <p className="text-sm font-black text-slate-800 tracking-tight">
+                        {activeResolution ? activeResolution.status : 'PENDING'}
+                      </p>
+                    </div>
+                    
+                    {/* QR Code Simulation */}
+                    <div className="bg-white p-1 border border-slate-200 rounded">
+                      <QrCode size={48} className="text-slate-900" />
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-center text-slate-400 mt-4 font-mono">
+                    ID: {activeResolution ? activeResolution.id : '---'} • VERIFIABLE SYSTEM RECORD
+                  </p>
+                </div>
+
+                {/* Decorative Elements */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-500"></div>
+             </div>
+          </div>
+
+          {/* Contextual Explanation */}
+          <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
+             <div className="flex items-start gap-3">
+               <AlertTriangle className="text-amber-500 shrink-0 mt-1" size={16} />
+               <div className="space-y-1">
+                 <h4 className="text-sm font-bold text-slate-200">Systemic Analysis Note</h4>
+                 <p className="text-xs text-slate-400 leading-relaxed">
+                   The widget acts as a <span className="text-cyan-400">stabilizing agent</span>. 
+                   Notice that when "Entropy" (disorder) is high, the stability drops. 
+                   Clicking <strong>Execute Resolve</strong> forces a calculation that creates a "Resolution Event," 
+                   artificially lowering entropy and restoring system balance.
+                 </p>
+               </div>
+             </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SystemicInterface;

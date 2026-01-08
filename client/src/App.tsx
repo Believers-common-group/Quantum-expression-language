@@ -15,6 +15,7 @@ import Warden from "@/pages/warden";
 import ArchitectureExplainer from "@/pages/architecture";
 import Workspace from "@/pages/workspace";
 import Briefing from "@/pages/briefing";
+import DevKit from "@/pages/devkit";
 
 function Router() {
   return (
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/workspace" component={Workspace} />
       <Route path="/briefing" component={Briefing} />
+      <Route path="/devkit" component={DevKit} />
       <Route path="/spectator" component={SpectatorView} />
       <Route path="/warden" component={Warden} />
       <Route path="/reference" component={Reference} />
