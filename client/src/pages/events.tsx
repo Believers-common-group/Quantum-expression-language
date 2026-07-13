@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Layout from "@/components/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +24,7 @@ const LEVEL_STYLES: Record<string, string> = {
   WARN: "bg-amber-500/10 text-amber-400 border-amber-500/20",
   ERROR: "bg-red-500/10 text-red-400 border-red-500/20",
   INFO: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  DEFAULT: "",
 };
 
 const TYPE_STYLES: Record<string, string> = {
@@ -34,6 +35,7 @@ const TYPE_STYLES: Record<string, string> = {
   SYNC: "text-green-400",
   POLICY: "text-cyan-400",
   ALERT: "text-red-400",
+  DEFAULT: "text-foreground",
 };
 
 export default function EventCollector() {
@@ -41,17 +43,8 @@ export default function EventCollector() {
   const [search, setSearch] = useState("");
   const [filterLevel, setFilterLevel] = useState<string>("ALL");
   const [isLive, setIsLive] = useState(true);
-  const [pulseCount, setPulseCount] = useState(0);
 
   const levels = ["ALL", "INFO", "SUCCESS", "WARN", "ERROR"];
-
-  useEffect(() => {
-    if (!isLive) return;
-    const timer = setInterval(() => {
-      setPulseCount((n) => n + 1);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, [isLive]);
 
   const filtered = events.filter((e) => {
     const matchLevel = filterLevel === "ALL" || e.level === filterLevel;
@@ -197,10 +190,10 @@ export default function EventCollector() {
                       <div className="flex-1 min-w-0 space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="font-mono text-xs text-muted-foreground whitespace-nowrap">{event.time}</span>
-                          <Badge variant="outline" className={`font-mono text-[10px] px-1.5 ${LEVEL_STYLES[event.level] ?? ""}`}>
+                          <Badge variant="outline" className={`font-mono text-[10px] px-1.5 ${LEVEL_STYLES[event.level] ?? LEVEL_STYLES.DEFAULT}`}>
                             {event.level}
                           </Badge>
-                          <span className={`font-mono text-xs font-bold ${TYPE_STYLES[event.type] ?? "text-foreground"}`}>
+                          <span className={`font-mono text-xs font-bold ${TYPE_STYLES[event.type] ?? TYPE_STYLES.DEFAULT}`}>
                             [{event.type}]
                           </span>
                           <span className="text-xs text-muted-foreground/70 truncate">{event.source}</span>
