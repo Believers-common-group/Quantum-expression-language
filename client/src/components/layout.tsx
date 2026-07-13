@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Zap, LayoutDashboard, Settings, Activity, Calculator, LogOut, Menu, Video, BookOpen, ShieldAlert, Network, Briefcase, FileCode, Cpu } from "lucide-react";
+import { Zap, LayoutDashboard, Settings, Activity, Calculator, LogOut, Menu, Video, BookOpen, ShieldAlert, Network, Briefcase, FileCode, Cpu, Radio } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -45,6 +45,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <NavItem href="/workspace" icon={Briefcase} label="Workspace" />
         <NavItem href="/briefing" icon={FileCode} label="Platform Briefing" />
         <NavItem href="/devkit" icon={Cpu} label="Dev Framework" />
+        <NavItem href="/events" icon={Radio} label="Event Collector" />
         <NavItem href="/spectator" icon={Video} label="Spectator View" />
         <NavItem href="/warden" icon={ShieldAlert} label="The Warden" />
         <NavItem href="/wizard" icon={Settings} label="Setup Wizard" />

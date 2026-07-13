@@ -16,6 +16,7 @@ import ArchitectureExplainer from "@/pages/architecture";
 import Workspace from "@/pages/workspace";
 import Briefing from "@/pages/briefing";
 import DevKit from "@/pages/devkit";
+import EventCollector from "@/pages/events";
 
 function Router() {
   return (
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/workspace" component={Workspace} />
       <Route path="/briefing" component={Briefing} />
       <Route path="/devkit" component={DevKit} />
+      <Route path="/events" component={EventCollector} />
       <Route path="/spectator" component={SpectatorView} />
       <Route path="/warden" component={Warden} />
       <Route path="/reference" component={Reference} />

@@ -61,6 +61,17 @@ export const mockCalculatorData = [
   { name: "Month 6", cost: 4600, savings: 18000 },
 ];
 
+export const mockEvents = [
+  { id: "evt-001", time: "10:42:01.033", type: "HANDSHAKE", source: "Edge-Node-992", actor: "NODE-AGENT", level: "INFO", message: "TLS handshake initiated with Data Center US-East-1.", acknowledged: false },
+  { id: "evt-002", time: "10:42:05.210", type: "AUTH", source: "QEL-Auth", actor: "ADMIN-01", level: "SUCCESS", message: "Identity token issued for tenant [T-ALPHA] via QEL-Auth.", acknowledged: false },
+  { id: "evt-003", time: "10:42:12.887", type: "SCHEMA", source: "Schema-Registry", actor: "SCHEMA-DAEMON", level: "WARN", message: "Registry latency spike detected — response time 120ms, threshold 80ms.", acknowledged: false },
+  { id: "evt-004", time: "10:43:00.004", type: "PROVISION", source: "License-Silo", actor: "ADMIN-01", level: "INFO", message: "License silo provisioning started for tenant [T-ALPHA].", acknowledged: true },
+  { id: "evt-005", time: "10:43:45.999", type: "SYNC", source: "ERP-Connector", actor: "SYNC-BOT", level: "SUCCESS", message: "ERP backfill batch #4421 completed — 2,400 records ingested.", acknowledged: true },
+  { id: "evt-006", time: "10:44:11.201", type: "POLICY", source: "Warden", actor: "WARDEN-AI", level: "INFO", message: "Governance policy v3.2.1 enforced on Arc [arc_8374].", acknowledged: false },
+  { id: "evt-007", time: "10:44:55.003", type: "ALERT", source: "Edge-Node-004", actor: "NODE-AGENT", level: "ERROR", message: "Node [E-004] failed health-check. Auto-recovery sequence triggered.", acknowledged: false },
+  { id: "evt-008", time: "10:45:30.600", type: "HANDSHAKE", source: "Edge-Node-005", actor: "NODE-AGENT", level: "INFO", message: "TLS handshake completed. Node [E-005] online.", acknowledged: false },
+];
+
 export const checklistSteps = [
   { id: 1, title: "Edge Registration", description: "Register edge nodes with QEL Identity Provider.", status: "completed" },
   { id: 2, title: "Schema Bootstrap", description: "Initialize schema registry and validate definitions.", status: "completed" },
