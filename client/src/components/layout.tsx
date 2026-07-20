@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Zap, LayoutDashboard, Settings, Activity, Calculator, LogOut, Menu, Video, BookOpen, ShieldAlert, Network, Briefcase, FileCode, Cpu } from "lucide-react";
+import { Zap, LayoutDashboard, Settings, Activity, Calculator, LogOut, Menu, Video, BookOpen, ShieldAlert, Network, Briefcase, FileCode, Cpu, FileCheck2 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -11,8 +11,8 @@ const NavItem = ({ href, icon: Icon, label }: { href: string; icon: any; label: 
   return (
     <Link href={href}>
       <a className={`flex items-center gap-3 px-4 py-3 rounded-md transition-all duration-200 group ${
-        isActive 
-          ? "bg-primary/10 text-primary border border-primary/20" 
+        isActive
+          ? "bg-primary/10 text-primary border border-primary/20"
           : "text-muted-foreground hover:text-foreground hover:bg-white/5"
       }`}>
         <Icon className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`} />
@@ -34,14 +34,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Zap className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h1 className="font-mono font-bold text-lg tracking-wider text-foreground">QEL<span className="text-primary">.OS</span></h1>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Quantum Ops</p>
+            <h1 className="font-mono font-bold text-lg tracking-wider text-foreground">QEL<span className="text-primary">.Console</span></h1>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Reference integration</p>
           </div>
         </div>
       </div>
 
-      <nav className="flex-1 p-4 space-y-2">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         <NavItem href="/dashboard" icon={LayoutDashboard} label="Mission Control" />
+        <NavItem href="/qel-pilot" icon={FileCheck2} label="QEL v0.1 Pilot" />
         <NavItem href="/workspace" icon={Briefcase} label="Workspace" />
         <NavItem href="/briefing" icon={FileCode} label="Platform Briefing" />
         <NavItem href="/devkit" icon={Cpu} label="Dev Framework" />
@@ -67,12 +68,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex overflow-hidden">
-      {/* Desktop Sidebar */}
       <aside className="hidden md:block w-64 h-screen fixed left-0 top-0 z-20">
         <NavContent />
       </aside>
 
-      {/* Mobile Sidebar */}
       <div className="md:hidden fixed top-4 left-4 z-50">
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
@@ -86,7 +85,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </Sheet>
       </div>
 
-      {/* Main Content */}
       <main className="flex-1 md:ml-64 min-h-screen relative overflow-y-auto">
         <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-background to-background pointer-events-none" />
         <div className="relative z-10 p-6 md:p-12 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">

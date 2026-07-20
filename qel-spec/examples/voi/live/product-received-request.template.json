@@ -1,0 +1,38 @@
+{
+  "grn": {
+    "id": "REPLACE-WITH-CONTROLLED-GRN-ID",
+    "issued_at": "2026-07-21T10:30:00+05:30",
+    "source_system": "logic-erp",
+    "document_uri": "riveros://pending/replace-with-grn-evidence-id",
+    "document_digest": "sha256:REPLACE_WITH_64_LOWERCASE_HEX_CHARACTERS"
+  },
+  "warehouse": {
+    "node_id": "urn:vsr:node:warehouse-001",
+    "jurisdiction": "IN-KA"
+  },
+  "operator": {
+    "id": "did:digitalme:operator-001",
+    "role": "receiving-operator",
+    "license_reference": "urn:empireos:license:warehouse-receiving-001"
+  },
+  "shipment": {
+    "dispatch_expression": "urn:qel:expression:optional-dispatch-expression",
+    "purchase_order_id": "REPLACE-WITH-PO-ID",
+    "supplier_id": "urn:organization:replace-with-supplier-id"
+  },
+  "product": {
+    "batch_id": "urn:product-batch:voi:replace-with-batch-id",
+    "sku": "REPLACE-WITH-SKU",
+    "style_code": "REPLACE-WITH-STYLE-CODE",
+    "quantity": 1,
+    "unit": "piece"
+  },
+  "occurred_at": "2026-07-21T10:30:00+05:30",
+  "evidence": [
+    {
+      "type": "receiving-scan",
+      "uri": "riveros://pending/replace-with-receiving-scan-id",
+      "digest": "sha256:REPLACE_WITH_64_LOWERCASE_HEX_CHARACTERS"
+    }
+  ]
+}

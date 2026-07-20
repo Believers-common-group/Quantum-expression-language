@@ -1,0 +1,49 @@
+{
+  "qel_version": "0.1.0",
+  "id": "urn:qel:expression:voi-pilot-005-payment-settled",
+  "kind": "attestation",
+  "type": "org.virtualsilkroad.settlement.payment-settled.v1",
+  "status": "attested",
+  "issuer": { "id": "did:example:voi-pilot-operator", "role": "settlement-attestor" },
+  "actor": { "id": "did:example:voi-pilot-operator", "role": "settlement-connector" },
+  "beneficiary": { "id": "did:example:voi-jeans-retail-india", "role": "settlement-account-holder" },
+  "subject": { "id": "urn:voi:settlement:pilot-0001", "type": "merchant-settlement" },
+  "transition": { "from": "pending", "to": "settled" },
+  "place": { "node": "urn:vsr:node:voi-pilot-bangalore-001", "jurisdiction": "IN-KA" },
+  "time": {
+    "occurred_at": "2026-07-22T09:00:00+05:30",
+    "observed_at": "2026-07-22T09:00:00+05:30",
+    "issued_at": "2026-07-22T09:00:00+05:30"
+  },
+  "authority": [{
+    "type": "settlement-connector-mandate",
+    "reference": "urn:empireos:license:silk-payment-connector-v1",
+    "scope": ["settle-payment", "attest-settlement"]
+  }],
+  "consent": { "status": "not-applicable", "basis": "commercial-and-operational-record" },
+  "evidence": [{
+    "type": "settlement-advice",
+    "digest": "sha256:69cf3f75eab5ea1adbf38b5e671efad9e32e937b5e52c7500d46cf058d1a4f79",
+    "location": "riveros://voi-pilot/evidence/005",
+    "media_type": "application/json"
+  }],
+  "relationships": [
+    { "relation": "caused_by", "expression": "urn:qel:expression:voi-pilot-003-product-sold" },
+    { "relation": "caused_by", "expression": "urn:qel:expression:voi-pilot-004-product-returned" }
+  ],
+  "payload": {
+    "gross_amount_minor": 249900,
+    "return_amount_minor": 249900,
+    "net_amount_minor": 0,
+    "currency": "INR",
+    "settlement_account": "urn:account:pseudonymous:voi-pilot",
+    "bank_reference": "BANK-PILOT-0001"
+  },
+  "proof": [{
+    "type": "MockProof",
+    "verification_method": "did:example:voi-pilot-operator#test-key-1",
+    "created": "2026-07-22T09:00:00+05:30",
+    "payload_digest": "sha256:ac5f4398ba2eaaee7911a145b87f0d0e9ce4192044c9d9ff7f03d108d25bbe6b",
+    "proof_value": "mock:005:7f03d108d25bbe6b"
+  }]
+}

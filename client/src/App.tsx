@@ -16,12 +16,14 @@ import ArchitectureExplainer from "@/pages/architecture";
 import Workspace from "@/pages/workspace";
 import Briefing from "@/pages/briefing";
 import DevKit from "@/pages/devkit";
+import QelPilot from "@/pages/qel-pilot";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Login} />
       <Route path="/dashboard" component={Dashboard} />
+      <Route path="/qel-pilot" component={QelPilot} />
       <Route path="/workspace" component={Workspace} />
       <Route path="/briefing" component={Briefing} />
       <Route path="/devkit" component={DevKit} />

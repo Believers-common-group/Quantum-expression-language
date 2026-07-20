@@ -1,0 +1,49 @@
+{
+  "qel_version": "0.1.0",
+  "id": "urn:qel:expression:voi-pilot-003-product-sold",
+  "kind": "action",
+  "type": "org.virtualsilkroad.commerce.product-sold.v1",
+  "status": "attested",
+  "issuer": { "id": "did:example:voi-pilot-operator", "role": "retail-sale-authority" },
+  "actor": { "id": "did:example:voi-pilot-operator", "role": "point-of-sale-system" },
+  "beneficiary": { "id": "did:example:voi-jeans-retail-india", "role": "merchant" },
+  "subject": { "id": "urn:voi:item:aw26-00421-00017", "type": "serialized-product" },
+  "transition": { "from": "available-for-sale", "to": "sold" },
+  "place": { "node": "urn:vsr:node:voi-pilot-bangalore-001", "jurisdiction": "IN-KA" },
+  "time": {
+    "occurred_at": "2026-07-21T15:42:00+05:30",
+    "observed_at": "2026-07-21T15:42:00+05:30",
+    "issued_at": "2026-07-21T15:42:00+05:30"
+  },
+  "authority": [{
+    "type": "retail-sale-mandate",
+    "reference": "urn:empireos:license:voi-retail-sale-v1",
+    "scope": ["sell-product", "create-receivable"]
+  }],
+  "consent": { "status": "not-applicable", "basis": "commercial-and-operational-record" },
+  "evidence": [{
+    "type": "retail-receipt",
+    "digest": "sha256:d8c88ac0d4abc674a1c756f259d2746d9e31338f7a5baf9a93c28899b5c4018d",
+    "location": "riveros://voi-pilot/evidence/003",
+    "media_type": "application/json"
+  }],
+  "relationships": [{
+    "relation": "caused_by",
+    "expression": "urn:qel:expression:voi-pilot-002-inventory-transferred"
+  }],
+  "payload": {
+    "sku": "VOI-AW26-JN-017",
+    "quantity": 1,
+    "gross_amount_minor": 249900,
+    "currency": "INR",
+    "settlement_reference": "urn:voi:settlement:pilot-0001",
+    "receipt_reference": "POS-PILOT-0001"
+  },
+  "proof": [{
+    "type": "MockProof",
+    "verification_method": "did:example:voi-pilot-operator#test-key-1",
+    "created": "2026-07-21T15:42:00+05:30",
+    "payload_digest": "sha256:142c0acd5f76beddc821aa495d52b917505afbee2ec633ef639d2b149dcb2903",
+    "proof_value": "mock:003:639d2b149dcb2903"
+  }]
+}

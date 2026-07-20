@@ -1,0 +1,46 @@
+{
+  "qel_version": "0.1.0",
+  "id": "urn:qel:expression:voi-pilot-002-inventory-transferred",
+  "kind": "action",
+  "type": "org.virtualsilkroad.inventory.inventory-transferred.v1",
+  "status": "attested",
+  "issuer": { "id": "did:example:voi-pilot-operator", "role": "inventory-transfer-authority" },
+  "actor": { "id": "did:example:voi-pilot-operator", "role": "dispatch-operator" },
+  "subject": { "id": "urn:voi:batch:aw26-00421", "type": "product-batch" },
+  "transition": { "from": "warehouse-custody", "to": "retail-cluster-custody" },
+  "place": { "node": "urn:vsr:node:voi-pilot-bangalore-001", "jurisdiction": "IN-KA" },
+  "time": {
+    "occurred_at": "2026-07-21T11:15:00+05:30",
+    "observed_at": "2026-07-21T11:15:00+05:30",
+    "issued_at": "2026-07-21T11:15:00+05:30"
+  },
+  "authority": [{
+    "type": "inventory-transfer-mandate",
+    "reference": "urn:empireos:license:voi-inventory-transfer-v1",
+    "scope": ["transfer-custody", "dispatch-product"]
+  }],
+  "consent": { "status": "not-applicable", "basis": "commercial-and-operational-record" },
+  "evidence": [{
+    "type": "stock-transfer-note",
+    "digest": "sha256:5ed22e1ab25af7ceadf700bb0a988c8ee1c2f38950b510333e8b7e0a7fd27ad6",
+    "location": "riveros://voi-pilot/evidence/002",
+    "media_type": "application/json"
+  }],
+  "relationships": [{
+    "relation": "caused_by",
+    "expression": "urn:qel:expression:voi-pilot-001-product-received"
+  }],
+  "payload": {
+    "unit_count": 120,
+    "source_node": "urn:vsr:node:voi-pilot-bangalore-001",
+    "destination_node": "urn:vsr:node:retail-cluster-001",
+    "document_reference": "STN-PILOT-0001"
+  },
+  "proof": [{
+    "type": "MockProof",
+    "verification_method": "did:example:voi-pilot-operator#test-key-1",
+    "created": "2026-07-21T11:15:00+05:30",
+    "payload_digest": "sha256:ca79fd49dced1a158599b50165081d593248fcb47271275ab1072737aca23285",
+    "proof_value": "mock:002:b1072737aca23285"
+  }]
+}
