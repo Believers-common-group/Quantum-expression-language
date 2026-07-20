@@ -1,0 +1,232 @@
+name: PR 11 review and merge notifications
+
+on:
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  notify:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.number == 11 }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Record and forward notification
+        uses: actions/github-script@v7
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.PR11_SLACK_WEBHOOK_URL }}
+          NOTION_TOKEN: ${{ secrets.PR11_NOTION_TOKEN }}
+          NOTION_PARENT_PAGE_ID: ${{ secrets.PR11_NOTION_PARENT_PAGE_ID }}
+          DROPBOX_ACCESS_TOKEN: ${{ secrets.PR11_DROPBOX_ACCESS_TOKEN }}
+          DROPBOX_PATH: ${{ vars.PR11_DROPBOX_PATH }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            let pr = context.payload.pull_request;
+
+            if (!pr) {
+              const response = await github.rest.pulls.get({
+                owner,
+                repo,
+                pull_number: 11,
+              });
+              pr = response.data;
+            }
+
+            if (pr.number !== 11) {
+              core.info(`Ignoring PR #${pr.number}.`);
+              return;
+            }
+
+            const action = context.payload.action || "manual";
+            const review = context.payload.review || null;
+            const merged = context.eventName === "pull_request" && action === "closed" && Boolean(pr.merged);
+
+            if (context.eventName === "pull_request" && !merged) {
+              core.info("PR #11 was closed without merge; no notification was emitted.");
+              return;
+            }
+
+            const actor = review?.user?.login || context.actor;
+            const eventLabel = review
+              ? `review ${action}: ${review.state}`
+              : merged
+                ? "merged"
+                : "manual status check";
+            const timestamp = new Date().toISOString();
+            const prUrl = pr.html_url;
+            const reviewUrl = review?.html_url || "";
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+            const commitUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/commit/${pr.head.sha}`;
+
+            const urlLines = [
+              `- [PR #11](${prUrl})`,
+              reviewUrl ? `- [Review](${reviewUrl})` : null,
+              `- [Workflow run](${runUrl})`,
+              `- [Head commit](${commitUrl})`,
+            ].filter(Boolean);
+
+            const issueComment = [
+              `### PR #11 ${eventLabel}`,
+              "",
+              `- Actor: @${actor}`,
+              `- Event: \`${context.eventName}\` / \`${action}\``,
+              `- Recorded: ${timestamp}`,
+              ...urlLines,
+              "",
+              "> This notification records review or merge state. It does not approve, merge, or alter the pull request.",
+            ].join("\n");
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: 13,
+              body: issueComment,
+            });
+
+            await core.summary
+              .addHeading(`PR #11 ${eventLabel}`)
+              .addRaw(issueComment)
+              .write();
+
+            async function sendJson(url, body, headers, destination) {
+              const response = await fetch(url, {
+                method: "POST",
+                headers,
+                body: JSON.stringify(body),
+              });
+              if (!response.ok) {
+                const responseText = await response.text();
+                throw new Error(`${destination} notification failed (${response.status}): ${responseText.slice(0, 500)}`);
+              }
+              core.info(`${destination} notification sent.`);
+            }
+
+            const slackWebhook = process.env.SLACK_WEBHOOK_URL;
+            if (slackWebhook) {
+              const slackLinks = [
+                `<${prUrl}|PR #11>`,
+                reviewUrl ? `<${reviewUrl}|Review>` : null,
+                `<${runUrl}|Workflow run>`,
+                `<${commitUrl}|Head commit>`,
+              ].filter(Boolean).join(" | ");
+
+              await sendJson(
+                slackWebhook,
+                {
+                  text: `PR #11 ${eventLabel} by @${actor}: ${prUrl}`,
+                  blocks: [
+                    {
+                      type: "section",
+                      text: {
+                        type: "mrkdwn",
+                        text: `*PR #11 ${eventLabel}*\nActor: @${actor}\n${slackLinks}`,
+                      },
+                    },
+                  ],
+                },
+                { "Content-Type": "application/json" },
+                "Slack",
+              );
+            } else {
+              core.info("Slack destination is not configured; skipping.");
+            }
+
+            const notionToken = process.env.NOTION_TOKEN;
+            const notionParentPageId = process.env.NOTION_PARENT_PAGE_ID;
+            if (notionToken && notionParentPageId) {
+              const children = [
+                {
+                  object: "block",
+                  type: "paragraph",
+                  paragraph: {
+                    rich_text: [
+                      {
+                        type: "text",
+                        text: { content: `Actor: @${actor} | Event: ${context.eventName}/${action} | Recorded: ${timestamp}` },
+                      },
+                    ],
+                  },
+                },
+                { object: "block", type: "bookmark", bookmark: { url: prUrl } },
+                ...(reviewUrl ? [{ object: "block", type: "bookmark", bookmark: { url: reviewUrl } }] : []),
+                { object: "block", type: "bookmark", bookmark: { url: runUrl } },
+                { object: "block", type: "bookmark", bookmark: { url: commitUrl } },
+              ];
+
+              await sendJson(
+                "https://api.notion.com/v1/pages",
+                {
+                  parent: { page_id: notionParentPageId },
+                  properties: {
+                    title: {
+                      type: "title",
+                      title: [{ type: "text", text: { content: `PR #11 ${eventLabel}` } }],
+                    },
+                  },
+                  children,
+                },
+                {
+                  Authorization: `Bearer ${notionToken}`,
+                  "Content-Type": "application/json",
+                  "Notion-Version": "2022-06-28",
+                },
+                "Notion",
+              );
+            } else {
+              core.info("Notion destination is not fully configured; skipping.");
+            }
+
+            const dropboxToken = process.env.DROPBOX_ACCESS_TOKEN;
+            if (dropboxToken) {
+              const folder = (process.env.DROPBOX_PATH || "/QEL/PR-11-notifications").replace(/\/$/, "");
+              const safeTimestamp = timestamp.replace(/[:.]/g, "-");
+              const dropboxFile = `${folder}/${safeTimestamp}-${context.eventName}-${action}.json`;
+              const notificationRecord = {
+                repository: process.env.GITHUB_REPOSITORY,
+                pull_request: 11,
+                event: context.eventName,
+                action,
+                event_label: eventLabel,
+                actor,
+                recorded_at: timestamp,
+                urls: {
+                  pull_request: prUrl,
+                  review: reviewUrl || null,
+                  workflow_run: runUrl,
+                  head_commit: commitUrl,
+                  github_audit_issue: `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/issues/13`,
+                },
+              };
+
+              const response = await fetch("https://content.dropboxapi.com/2/files/upload", {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${dropboxToken}`,
+                  "Content-Type": "application/octet-stream",
+                  "Dropbox-API-Arg": JSON.stringify({
+                    path: dropboxFile,
+                    mode: "add",
+                    autorename: true,
+                    mute: false,
+                    strict_conflict: false,
+                  }),
+                },
+                body: JSON.stringify(notificationRecord, null, 2),
+              });
+
+              if (!response.ok) {
+                const responseText = await response.text();
+                throw new Error(`Dropbox notification failed (${response.status}): ${responseText.slice(0, 500)}`);
+              }
+              core.info(`Dropbox notification uploaded to ${dropboxFile}.`);
+            } else {
+              core.info("Dropbox destination is not configured; skipping.");
+            }
