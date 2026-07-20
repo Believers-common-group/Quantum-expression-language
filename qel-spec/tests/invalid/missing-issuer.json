@@ -1,0 +1,18 @@
+{
+  "qel_version": "0.1.0",
+  "id": "urn:qel:expression:invalid-missing-issuer",
+  "kind": "observation",
+  "type": "org.virtualsilkroad.inventory.product-received.v1",
+  "status": "attested",
+  "actor": { "id": "did:example:voi-pilot-operator", "role": "receiving-operator" },
+  "subject": { "id": "urn:voi:batch:aw26-00421", "type": "product-batch" },
+  "transition": { "from": "in-transit", "to": "received" },
+  "place": { "node": "urn:vsr:node:voi-pilot-bangalore-001", "jurisdiction": "IN-KA" },
+  "time": { "occurred_at": "2026-07-21T10:30:00+05:30", "observed_at": "2026-07-21T10:30:00+05:30", "issued_at": "2026-07-21T10:30:00+05:30" },
+  "authority": [{ "type": "warehouse-receiving-mandate", "reference": "urn:empireos:license:voi-warehouse-receiving-v1", "scope": ["receive-product", "record-custody"] }],
+  "consent": { "status": "not-applicable", "basis": "commercial-and-operational-record" },
+  "evidence": [{ "type": "goods-receipt-note", "digest": "sha256:68fd4ef90ac93da7ef42fb2c6d80d7ade6a9861d4edb78b2ee2de1df29fbde0b", "location": "riveros://voi-pilot/evidence/001", "media_type": "application/json" }],
+  "relationships": [],
+  "payload": { "sku_count": 12, "unit_count": 571, "source_node": "urn:vsr:node:factory-001", "destination_node": "urn:vsr:node:voi-pilot-bangalore-001", "document_reference": "GRN-PILOT-0001" },
+  "proof": [{ "type": "MockProof", "verification_method": "did:example:test#key-1", "created": "2026-07-21T10:30:00+05:30", "payload_digest": "sha256:42e5b2c999345249c01a068ef33abfee9bd27e81ef2804319e28d4e4d34d439a", "proof_value": "mock:invalid" }]
+}
