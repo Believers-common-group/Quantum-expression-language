@@ -1,0 +1,48 @@
+{
+  "qel_version": "0.1.0",
+  "id": "urn:qel:expression:voi-pilot-004-product-returned",
+  "kind": "action",
+  "type": "org.virtualsilkroad.commerce.product-returned.v1",
+  "status": "attested",
+  "issuer": { "id": "did:example:voi-pilot-operator", "role": "return-acceptance-authority" },
+  "actor": { "id": "did:example:voi-pilot-operator", "role": "store-return-operator" },
+  "subject": { "id": "urn:voi:item:aw26-00421-00017", "type": "serialized-product" },
+  "transition": { "from": "sold", "to": "return-inspection" },
+  "place": { "node": "urn:vsr:node:voi-pilot-bangalore-001", "jurisdiction": "IN-KA" },
+  "time": {
+    "occurred_at": "2026-07-21T18:10:00+05:30",
+    "observed_at": "2026-07-21T18:10:00+05:30",
+    "issued_at": "2026-07-21T18:10:00+05:30"
+  },
+  "authority": [{
+    "type": "returns-policy-mandate",
+    "reference": "urn:empireos:license:voi-returns-v1",
+    "scope": ["accept-return", "initiate-refund"]
+  }],
+  "consent": { "status": "not-applicable", "basis": "commercial-and-operational-record" },
+  "evidence": [{
+    "type": "return-acceptance-record",
+    "digest": "sha256:62ed1630b72ade0b8ee9dcc2a6e0cc26bed3941e9c80facdadd1f42abd93466c",
+    "location": "riveros://voi-pilot/evidence/004",
+    "media_type": "application/json"
+  }],
+  "relationships": [{
+    "relation": "caused_by",
+    "expression": "urn:qel:expression:voi-pilot-003-product-sold"
+  }],
+  "payload": {
+    "quantity": 1,
+    "reason_code": "size-exchange",
+    "receipt_reference": "POS-PILOT-0001",
+    "return_reference": "RET-PILOT-0001",
+    "refund_amount_minor": 249900,
+    "currency": "INR"
+  },
+  "proof": [{
+    "type": "MockProof",
+    "verification_method": "did:example:voi-pilot-operator#test-key-1",
+    "created": "2026-07-21T18:10:00+05:30",
+    "payload_digest": "sha256:ac0d5774aa8d8f2f69a6e69adc6393ae9b7cd1e7eb87fb9f9c8505eac629ef92",
+    "proof_value": "mock:004:9c8505eac629ef92"
+  }]
+}
