@@ -13,7 +13,7 @@ New standards work is isolated under:
 - `qel-spec/` — normative language draft, schema, semantics, and conformance vectors
 - `qel-core/` — Python reference validator, canonicalizer, hasher, and CLI
 - `qel-spec/examples/voi/` — five-event VOI pilot
-- `/api/qel/*` and `/qel-pilot` — read-only console reconnection
+- `/api/qel/*` and `/qel-pilot` — console reconnection and controlled pilot status
 
 ## Canonical definition
 
@@ -21,10 +21,31 @@ Quantum Expression Language (QEL) is a neutral, versioned language for expressin
 
 A valid QEL expression is **not automatically a true fact**. It is a structurally valid, integrity-protected claim whose evidentiary weight depends on its issuer, authority, proof, evidence, independent attestations, and dispute status.
 
+## Controlled Product Received gate
+
+Only `org.voijeans.inventory.product-received.v1` has a production-shaped write path. It is disabled by default and requires:
+
+- ingest authentication;
+- strict request validation;
+- an allowlisted VSR/Quantum Arc warehouse node;
+- an allowlisted DigitalMe operator and EmpireOS licence reference;
+- an idempotency key;
+- an accepted RiverOS receipt bound to the exact expression digest.
+
+Inventory Transferred, Product Sold, Product Returned, and Payment Settled remain read-only conformance fixtures.
+
+See:
+
+- `docs/VOI_PRODUCT_RECEIVED_RUNBOOK.md`
+- `docs/PRODUCT_RECEIVED_ACCEPTANCE_RECORD.md`
+- `.env.qel.example`
+- `qel-spec/examples/voi/live/product-received-request.template.json`
+
 ## Development
 
 ```bash
 npm ci
+npm run test:qel-ingest
 npm run check
 npm run build
 
