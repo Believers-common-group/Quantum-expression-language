@@ -2,13 +2,29 @@ import Layout from "@/components/layout";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, FileCheck2, GitBranch, ShieldAlert } from "lucide-react";
+import { CheckCircle2, FileCheck2, GitBranch, ShieldAlert, ShieldCheck } from "lucide-react";
+
+interface ProductReceivedActivation {
+  ready: boolean;
+  enabled: boolean;
+  missing: string[];
+  warehouseNodeCount: number;
+  licensedOperatorCount: number;
+  configurationError: string | null;
+}
 
 interface QelStatus {
   language: string;
   specVersion: string;
   frozenSnapshot: string;
   validation: { implementation: string; commands: string[] };
+  pilot: {
+    liveActivation: {
+      activeEvent: string;
+      otherEventsEnabled: boolean;
+      productReceived: ProductReceivedActivation;
+    };
+  };
 }
 
 interface QelExpression {
@@ -29,6 +45,7 @@ interface PilotResponse {
 export default function QelPilot() {
   const statusQuery = useQuery<QelStatus>({ queryKey: ["/api/qel/status"] });
   const eventsQuery = useQuery<PilotResponse>({ queryKey: ["/api/qel/pilot/voi/events"] });
+  const productReceived = statusQuery.data?.pilot.liveActivation.productReceived;
 
   return (
     <Layout>
@@ -40,7 +57,7 @@ export default function QelPilot() {
             </div>
             <div>
               <h1 className="text-3xl font-bold tracking-tight">QEL v0.1 Pilot</h1>
-              <p className="text-muted-foreground">Read-only connection to the extracted specification and VOI conformance fixtures.</p>
+              <p className="text-muted-foreground">Read-only status for the extracted specification, VOI fixtures, and controlled Product Received gate.</p>
             </div>
           </div>
         </header>
@@ -51,7 +68,7 @@ export default function QelPilot() {
             <div>
               <div className="font-semibold">Claim boundary</div>
               <p className="text-sm text-muted-foreground">
-                A valid expression is a signed, integrity-protected claim. It is not automatically a true fact, legal determination, or accepted institutional outcome.
+                A valid expression is an integrity-protected claim. It is not automatically a true fact, legal determination, or accepted institutional outcome.
               </p>
             </div>
           </CardContent>
@@ -62,7 +79,7 @@ export default function QelPilot() {
         ) : statusQuery.error || !statusQuery.data ? (
           <Card><CardContent className="p-6 text-destructive">QEL status endpoint is unavailable.</CardContent></Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader><CardDescription>Specification</CardDescription><CardTitle>{statusQuery.data.specVersion}</CardTitle></CardHeader>
               <CardContent className="text-sm text-muted-foreground">{statusQuery.data.language}</CardContent>
@@ -77,13 +94,29 @@ export default function QelPilot() {
                 {statusQuery.data.validation.commands.map((command) => <Badge key={command} variant="outline">{command}</Badge>)}
               </CardContent>
             </Card>
+            <Card className={productReceived?.ready ? "border-emerald-500/40" : "border-amber-500/30"}>
+              <CardHeader>
+                <CardDescription>Live activation</CardDescription>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  {productReceived?.ready ? <ShieldCheck className="h-4 w-4 text-emerald-500" /> : <ShieldAlert className="h-4 w-4 text-amber-500" />}
+                  Product Received
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-xs text-muted-foreground">
+                <Badge variant={productReceived?.ready ? "default" : "outline"}>{productReceived?.ready ? "READY" : "DISABLED / INCOMPLETE"}</Badge>
+                <div>{productReceived?.warehouseNodeCount ?? 0} warehouse node(s)</div>
+                <div>{productReceived?.licensedOperatorCount ?? 0} licensed operator(s)</div>
+                {productReceived?.configurationError ? <div className="text-destructive">{productReceived.configurationError}</div> : null}
+                {(productReceived?.missing ?? []).map((item) => <div key={item} className="font-mono">Missing: {item}</div>)}
+              </CardContent>
+            </Card>
           </div>
         )}
 
         <Card>
           <CardHeader>
             <CardTitle>VOI five-event chain</CardTitle>
-            <CardDescription>Canonical test fixtures served from `qel-spec/examples/voi`.</CardDescription>
+            <CardDescription>Canonical test fixtures served from `qel-spec/examples/voi`. Only Product Received has a controlled live admission path.</CardDescription>
           </CardHeader>
           <CardContent>
             {eventsQuery.isLoading ? (
