@@ -1,0 +1,62 @@
+name: Pinyin rail CLI and MCP
+
+on:
+  pull_request:
+    paths:
+      - "rail-cli/**"
+      - "rail-mcp/**"
+      - "rail-tsconfig.json"
+      - "package.json"
+      - ".github/workflows/pinyin-rail-cli.yml"
+      - "docs/PINYIN_RAIL_CLI_MCP_V0_1.md"
+  push:
+    branches:
+      - main
+      - "agent/pinyin-rail-cli-mcp-v0.1"
+    paths:
+      - "rail-cli/**"
+      - "rail-mcp/**"
+      - "rail-tsconfig.json"
+      - "package.json"
+      - ".github/workflows/pinyin-rail-cli.yml"
+      - "docs/PINYIN_RAIL_CLI_MCP_V0_1.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Type-check rail components
+        run: npm run check:rail
+
+      - name: Test Pinyin command compiler and MCP server
+        run: npm run test:rail
+
+      - name: Compile representative export command
+        run: |
+          npm run railctl -- \
+            daochu jiedian-rizhi \
+            --jiedian vsr://mainnet/IN-KA/operational/warehouse/voi/bangalore/warehouse-001 \
+            --kaishi 2026-07-21T00:00:00Z \
+            --jieshu 2026-07-21T23:59:59Z \
+            > rail-command.json
+          jq -e '.compiled.tool == "rail.logs.export"' rail-command.json
+
+      - name: Preserve compiled command
+        uses: actions/upload-artifact@v4
+        with:
+          name: pinyin-rail-command-${{ github.run_id }}
+          path: rail-command.json
+          retention-days: 30
