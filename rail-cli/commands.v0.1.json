@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "registry_version": "0.1.0",
+  "registry_version": "0.2.0",
   "status": "draft",
   "language_policy": {
     "display_script": "zh-Hans",
@@ -9,6 +9,13 @@
     "rule": "Pinyin is an operator alias only. Canonical tool names determine machine meaning."
   },
   "commands": [
+    {
+      "display": "解析节点",
+      "pinyin": ["chaxun", "jiedian"],
+      "tool": "rail.nodes.resolve",
+      "required": ["node_id"],
+      "defaults": {}
+    },
     {
       "display": "导出节点日志",
       "pinyin": ["daochu", "jiedian-rizhi"],
