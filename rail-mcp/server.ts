@@ -212,12 +212,17 @@ async function sendCommunication(args: JsonObject): Promise<JsonObject> {
   };
 
   await mkdir(outbox, { recursive: true });
-  await writeFile(join(outbox, `${communicationId}.json`), `${JSON.stringify(record, null, 2)}\n`, {
-    encoding: "utf8",
-    flag: "wx",
-  }).catch(async (error: NodeJS.ErrnoException) => {
-    if (error.code !== "EEXIST") throw error;
-  });
+  let persistedRecord = record;
+  try {
+    await writeFile(join(outbox, `${communicationId}.json`), `${JSON.stringify(record, null, 2)}\n`, {
+      encoding: "utf8",
+      flag: "wx",
+    });
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code !== "EEXIST") throw error;
+    persistedRecord = JSON.parse(await readFile(join(outbox, `${communicationId}.json`), "utf8"));
+  }
 
   return {
     content: [
@@ -225,7 +230,7 @@ async function sendCommunication(args: JsonObject): Promise<JsonObject> {
       resourceLink(`rail://communications/${communicationId}`, "Communication record"),
       resourceLink(`rail://receipts/${receiptId}`, "Communication receipt"),
     ],
-    structuredContent: record,
+    structuredContent: persistedRecord,
     isError: false,
   };
 }
@@ -254,7 +259,12 @@ async function communicationStatus(args: JsonObject): Promise<JsonObject> {
 }
 
 async function callTool(contract: ToolContract, args: JsonObject): Promise<JsonObject> {
-  assertNoSensitiveKeys(args);
+  try {
+    assertNoSensitiveKeys(args);
+  } catch (error) {
+    return toolError(error instanceof Error ? error.message : String(error));
+  }
+
   const validationErrors = validateSchema(args, contract.inputSchema);
   if (validationErrors.length > 0) return toolError("Tool arguments failed validation", { validation_errors: validationErrors });
 
