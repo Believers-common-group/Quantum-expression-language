@@ -18,19 +18,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Record and forward notification
+        id: record
         uses: actions/github-script@v7
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PR11_SLACK_WEBHOOK_URL }}
           NOTION_TOKEN: ${{ secrets.PR11_NOTION_TOKEN }}
-          NOTION_PARENT_PAGE_ID: ${{ secrets.PR11_NOTION_PARENT_PAGE_ID }}
+          NOTION_PARENT_PAGE_ID: ${{ secrets.PR11_NOTION_PARENT_PAGE_ID || '3a323c8ea59d819faa8af8f848cd25a0' }}
           DROPBOX_ACCESS_TOKEN: ${{ secrets.PR11_DROPBOX_ACCESS_TOKEN }}
           DROPBOX_PATH: ${{ vars.PR11_DROPBOX_PATH }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const fs = require("fs");
+            const path = require("path");
             const { owner, repo } = context.repo;
-            let pr = context.payload.pull_request;
+            core.setOutput("artifact_ready", "false");
 
+            let pr = context.payload.pull_request;
             if (!pr) {
               const response = await github.rest.pulls.get({
                 owner,
@@ -65,12 +69,90 @@ jobs:
             const reviewUrl = review?.html_url || "";
             const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
             const commitUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/commit/${pr.head.sha}`;
+            const auditIssueUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/issues/13`;
+            const workflowUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/workflows/pr-11-notify.yml`;
+            const artifactName = `pr11-gpt-cache-${process.env.GITHUB_RUN_ID}`;
+
+            const notificationRecord = {
+              schema: "org.believerscommon.github.pr-notification.v1",
+              purpose: "sanitized-gpt-handoff-cache",
+              repository: process.env.GITHUB_REPOSITORY,
+              pull_request: 11,
+              event: context.eventName,
+              action,
+              event_label: eventLabel,
+              review_state: review?.state || null,
+              actor,
+              recorded_at: timestamp,
+              head_sha: pr.head.sha,
+              base_sha: pr.base.sha,
+              merged,
+              privacy: {
+                review_body_included: false,
+                secrets_included: false,
+                raw_github_event_included: false,
+              },
+              urls: {
+                pull_request: prUrl,
+                review: reviewUrl || null,
+                workflow_run: runUrl,
+                workflow_definition: workflowUrl,
+                head_commit: commitUrl,
+                github_audit_issue: auditIssueUrl,
+              },
+              cache: {
+                artifact_name: artifactName,
+                retention_days: 90,
+                interpretation: "Event metadata for future GPT-assisted review. It is not OpenAI internal cache or a substitute for GitHub source evidence.",
+              },
+            };
+
+            const gptCacheMarkdown = [
+              `# GPT handoff cache — PR #11 ${eventLabel}`,
+              "",
+              `- Repository: ${process.env.GITHUB_REPOSITORY}`,
+              "- Pull request: #11",
+              `- Actor: @${actor}`,
+              `- Event: ${context.eventName}/${action}`,
+              `- Review state: ${review?.state || "not-applicable"}`,
+              `- Recorded: ${timestamp}`,
+              `- Head SHA: ${pr.head.sha}`,
+              `- Merged: ${merged}`,
+              "",
+              "## URLs",
+              "",
+              `- PR: ${prUrl}`,
+              `- Review: ${reviewUrl || "not-applicable"}`,
+              `- Workflow run and logs: ${runUrl}`,
+              `- Head commit: ${commitUrl}`,
+              `- GitHub audit issue: ${auditIssueUrl}`,
+              "",
+              "## Trust boundary",
+              "",
+              "This capsule contains sanitized event metadata only. It excludes review-body text, raw webhook payloads, secrets, customer information, and confidential documents. It is a user-controlled handoff cache, not an export of OpenAI or ChatGPT internal cache or system logs.",
+              "",
+            ].join("\n");
+
+            const artifactDirectory = path.join(process.cwd(), "notification-artifacts");
+            fs.mkdirSync(artifactDirectory, { recursive: true });
+            fs.writeFileSync(
+              path.join(artifactDirectory, "pr11-notification.json"),
+              `${JSON.stringify(notificationRecord, null, 2)}\n`,
+              "utf8",
+            );
+            fs.writeFileSync(
+              path.join(artifactDirectory, "gpt-cache.md"),
+              gptCacheMarkdown,
+              "utf8",
+            );
+            core.setOutput("artifact_ready", "true");
 
             const urlLines = [
               `- [PR #11](${prUrl})`,
               reviewUrl ? `- [Review](${reviewUrl})` : null,
-              `- [Workflow run](${runUrl})`,
+              `- [Workflow run and logs](${runUrl})`,
               `- [Head commit](${commitUrl})`,
+              `- GPT cache artifact: \`${artifactName}\``,
             ].filter(Boolean);
 
             const issueComment = [
@@ -114,8 +196,9 @@ jobs:
               const slackLinks = [
                 `<${prUrl}|PR #11>`,
                 reviewUrl ? `<${reviewUrl}|Review>` : null,
-                `<${runUrl}|Workflow run>`,
+                `<${runUrl}|Workflow run and logs>`,
                 `<${commitUrl}|Head commit>`,
+                `<${auditIssueUrl}|Audit issue>`,
               ].filter(Boolean).join(" | ");
 
               await sendJson(
@@ -127,7 +210,7 @@ jobs:
                       type: "section",
                       text: {
                         type: "mrkdwn",
-                        text: `*PR #11 ${eventLabel}*\nActor: @${actor}\n${slackLinks}`,
+                        text: `*PR #11 ${eventLabel}*\nActor: @${actor}\nGPT cache: ${artifactName}\n${slackLinks}`,
                       },
                     },
                   ],
@@ -155,10 +238,23 @@ jobs:
                     ],
                   },
                 },
+                {
+                  object: "block",
+                  type: "paragraph",
+                  paragraph: {
+                    rich_text: [
+                      {
+                        type: "text",
+                        text: { content: `GPT cache artifact: ${artifactName}. Raw workflow logs remain available through the workflow-run URL.` },
+                      },
+                    ],
+                  },
+                },
                 { object: "block", type: "bookmark", bookmark: { url: prUrl } },
                 ...(reviewUrl ? [{ object: "block", type: "bookmark", bookmark: { url: reviewUrl } }] : []),
                 { object: "block", type: "bookmark", bookmark: { url: runUrl } },
                 { object: "block", type: "bookmark", bookmark: { url: commitUrl } },
+                { object: "block", type: "bookmark", bookmark: { url: auditIssueUrl } },
               ];
 
               await sendJson(
@@ -184,32 +280,11 @@ jobs:
               core.info("Notion destination is not fully configured; skipping.");
             }
 
-            const dropboxToken = process.env.DROPBOX_ACCESS_TOKEN;
-            if (dropboxToken) {
-              const folder = (process.env.DROPBOX_PATH || "/QEL/PR-11-notifications").replace(/\/$/, "");
-              const safeTimestamp = timestamp.replace(/[:.]/g, "-");
-              const dropboxFile = `${folder}/${safeTimestamp}-${context.eventName}-${action}.json`;
-              const notificationRecord = {
-                repository: process.env.GITHUB_REPOSITORY,
-                pull_request: 11,
-                event: context.eventName,
-                action,
-                event_label: eventLabel,
-                actor,
-                recorded_at: timestamp,
-                urls: {
-                  pull_request: prUrl,
-                  review: reviewUrl || null,
-                  workflow_run: runUrl,
-                  head_commit: commitUrl,
-                  github_audit_issue: `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/issues/13`,
-                },
-              };
-
+            async function uploadDropbox(dropboxFile, content) {
               const response = await fetch("https://content.dropboxapi.com/2/files/upload", {
                 method: "POST",
                 headers: {
-                  Authorization: `Bearer ${dropboxToken}`,
+                  Authorization: `Bearer ${process.env.DROPBOX_ACCESS_TOKEN}`,
                   "Content-Type": "application/octet-stream",
                   "Dropbox-API-Arg": JSON.stringify({
                     path: dropboxFile,
@@ -219,14 +294,31 @@ jobs:
                     strict_conflict: false,
                   }),
                 },
-                body: JSON.stringify(notificationRecord, null, 2),
+                body: content,
               });
-
               if (!response.ok) {
                 const responseText = await response.text();
                 throw new Error(`Dropbox notification failed (${response.status}): ${responseText.slice(0, 500)}`);
               }
               core.info(`Dropbox notification uploaded to ${dropboxFile}.`);
+            }
+
+            const dropboxToken = process.env.DROPBOX_ACCESS_TOKEN;
+            if (dropboxToken) {
+              const folder = (process.env.DROPBOX_PATH || "/QEL/PR-11-notifications").replace(/\/$/, "");
+              const safeTimestamp = timestamp.replace(/[:.]/g, "-");
+              const stem = `${folder}/${safeTimestamp}-${context.eventName}-${action}`;
+              await uploadDropbox(`${stem}.json`, `${JSON.stringify(notificationRecord, null, 2)}\n`);
+              await uploadDropbox(`${stem}-gpt-cache.md`, gptCacheMarkdown);
             } else {
               core.info("Dropbox destination is not configured; skipping.");
             }
+
+      - name: Upload GPT handoff cache
+        if: ${{ steps.record.outputs.artifact_ready == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr11-gpt-cache-${{ github.run_id }}
+          path: notification-artifacts/
+          if-no-files-found: error
+          retention-days: 90
