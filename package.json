@@ -9,6 +9,10 @@
     "build": "tsx script/build.ts",
     "start": "NODE_ENV=production node dist/index.cjs",
     "check": "tsc",
+    "check:rail": "tsc -p rail-tsconfig.json",
+    "test:rail": "tsx --test rail-cli/*.test.ts rail-mcp/*.test.ts",
+    "railctl": "tsx rail-cli/railctl.ts",
+    "rail:mcp": "tsx rail-mcp/server.ts",
     "db:push": "drizzle-kit push"
   },
   "dependencies": {

@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "registry_version": "0.2.0",
+  "status": "draft",
+  "language_policy": {
+    "display_script": "zh-Hans",
+    "operator_alias": "pinyin-ascii-no-tones",
+    "machine_identifiers": "stable-ascii-canonical",
+    "rule": "Pinyin is an operator alias only. Canonical tool names determine machine meaning."
+  },
+  "commands": [
+    {
+      "display": "解析节点",
+      "pinyin": ["chaxun", "jiedian"],
+      "tool": "rail.nodes.resolve",
+      "required": ["node_id"],
+      "defaults": {}
+    },
+    {
+      "display": "导出节点日志",
+      "pinyin": ["daochu", "jiedian-rizhi"],
+      "tool": "rail.logs.export",
+      "required": ["node_id", "from", "to"],
+      "defaults": {
+        "format": "qel-ndjson",
+        "redaction_policy": "strict",
+        "sign": true,
+        "archive": true,
+        "receipt_required": true
+      }
+    },
+    {
+      "display": "导入节点日志",
+      "pinyin": ["daoru", "jiedian-rizhi"],
+      "tool": "rail.logs.import.prepare",
+      "required": ["node_id", "source", "expected_digest"],
+      "defaults": {
+        "validate": true,
+        "quarantine": true,
+        "receipt_required": true
+      }
+    },
+    {
+      "display": "查询节点日志",
+      "pinyin": ["chaxun", "jiedian-rizhi"],
+      "tool": "rail.logs.query",
+      "required": ["node_id"],
+      "defaults": {
+        "limit": 100,
+        "redaction_policy": "strict"
+      }
+    },
+    {
+      "display": "查询回执",
+      "pinyin": ["chaxun", "huizhi"],
+      "tool": "rail.receipts.get",
+      "required": ["receipt_id"],
+      "defaults": {}
+    },
+    {
+      "display": "发送通信",
+      "pinyin": ["fasong", "tongxin"],
+      "tool": "comms.message.send",
+      "required": ["channels", "subject", "message"],
+      "defaults": {
+        "classification": "internal-operational",
+        "receipt_required": true
+      }
+    },
+    {
+      "display": "查询通信状态",
+      "pinyin": ["chaxun", "tongxin-zhuangtai"],
+      "tool": "comms.message.status",
+      "required": ["communication_id"],
+      "defaults": {}
+    }
+  ],
+  "options": {
+    "jiedian": "node_id",
+    "kaishi": "from",
+    "jieshu": "to",
+    "geshi": "format",
+    "tuomin": "redaction_policy",
+    "qianming": "sign",
+    "fengcun": "archive",
+    "huizhi": "receipt_required",
+    "laiyuan": "source",
+    "sha256": "expected_digest",
+    "yanzheng": "validate",
+    "geli": "quarantine",
+    "shijian": "time_window",
+    "jibie": "levels",
+    "shuliang": "limit",
+    "pindao": "channels",
+    "zhuti": "subject",
+    "xinxi": "message",
+    "ziyuan": "resource_links",
+    "fenlei": "classification",
+    "bianhao": "receipt_id",
+    "tongxin-bianhao": "communication_id",
+    "dengmi-key": "idempotency_key"
+  },
+  "list_options": ["levels", "channels", "resource_links"],
+  "boolean_options": ["sign", "archive", "receipt_required", "validate", "quarantine"]
+}

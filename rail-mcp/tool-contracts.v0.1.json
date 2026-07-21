@@ -1,0 +1,128 @@
+{
+  "protocol_version": "2025-06-18",
+  "contract_version": "0.2.0",
+  "status": "draft",
+  "authorization": {
+    "metadata_key": "org.believerscommon/authorization",
+    "required_proofs": ["digitalme-actor", "warden-policy"],
+    "registry_binding": "sha256 canonical node-registry digest"
+  },
+  "tools": [
+    {
+      "name": "rail.nodes.resolve",
+      "title": "Resolve signed rail node",
+      "description": "Resolve one exact node from the signed Warden registry after DigitalMe and Warden authorization checks.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["node_id"],
+        "properties": {
+          "node_id": {"type": "string", "pattern": "^(vsr://|urn:vsr:node:)"}
+        }
+      }
+    },
+    {
+      "name": "rail.logs.export",
+      "title": "Export rail-node logs",
+      "description": "Prepare an authorized, redacted node-log export and return resource and receipt references.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["node_id", "from", "to", "format", "redaction_policy", "idempotency_key"],
+        "properties": {
+          "node_id": {"type": "string", "pattern": "^(vsr://|urn:vsr:node:)"},
+          "from": {"type": "string", "format": "date-time"},
+          "to": {"type": "string", "format": "date-time"},
+          "format": {"enum": ["qel-ndjson", "jsonl", "zip"]},
+          "redaction_policy": {"enum": ["strict", "operational", "auditor"]},
+          "sign": {"type": "boolean"},
+          "archive": {"type": "boolean"},
+          "receipt_required": {"type": "boolean"},
+          "idempotency_key": {"type": "string", "minLength": 16}
+        }
+      }
+    },
+    {
+      "name": "rail.logs.import.prepare",
+      "title": "Prepare rail-node log import",
+      "description": "Validate provenance and digest, then place an authorized import into quarantine. This tool never commits authoritative evidence.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["node_id", "source", "expected_digest", "idempotency_key"],
+        "properties": {
+          "node_id": {"type": "string", "pattern": "^(vsr://|urn:vsr:node:)"},
+          "source": {"type": "string"},
+          "expected_digest": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+          "validate": {"type": "boolean"},
+          "quarantine": {"const": true},
+          "receipt_required": {"type": "boolean"},
+          "idempotency_key": {"type": "string", "minLength": 16}
+        }
+      }
+    },
+    {
+      "name": "rail.logs.query",
+      "title": "Query rail-node logs",
+      "description": "Return an authorized redacted query plan or delegated node-log result.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["node_id"],
+        "properties": {
+          "node_id": {"type": "string", "pattern": "^(vsr://|urn:vsr:node:)"},
+          "time_window": {"type": "string"},
+          "levels": {"type": "array", "items": {"type": "string"}},
+          "limit": {"type": "integer", "minimum": 1, "maximum": 10000},
+          "redaction_policy": {"enum": ["strict", "operational", "auditor"]}
+        }
+      }
+    },
+    {
+      "name": "rail.receipts.get",
+      "title": "Read rail receipt",
+      "description": "Read a receipt by its stable identifier under an authorized capability.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["receipt_id"],
+        "properties": {"receipt_id": {"type": "string", "minLength": 3}}
+      }
+    },
+    {
+      "name": "comms.message.send",
+      "title": "Send controlled communication",
+      "description": "Create an authorized classified communication request and route it through configured adapters.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["channels", "subject", "message", "idempotency_key"],
+        "properties": {
+          "channels": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"enum": ["github", "slack", "notion", "dropbox", "riveros"]}
+          },
+          "classification": {"enum": ["public", "internal-operational", "confidential"]},
+          "subject": {"type": "string", "minLength": 1, "maxLength": 200},
+          "message": {"type": "string", "minLength": 1, "maxLength": 4000},
+          "resource_links": {"type": "array", "items": {"type": "string"}},
+          "receipt_required": {"type": "boolean"},
+          "idempotency_key": {"type": "string", "minLength": 16}
+        }
+      }
+    },
+    {
+      "name": "comms.message.status",
+      "title": "Read communication status",
+      "description": "Read an authorized communication request status from the controlled outbox.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["communication_id"],
+        "properties": {"communication_id": {"type": "string", "minLength": 3}}
+      }
+    }
+  ]
+}
