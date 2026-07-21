@@ -46,7 +46,7 @@ jobs:
 
       - name: Compile representative export command
         run: |
-          npm run railctl -- \
+          ./node_modules/.bin/tsx rail-cli/railctl.ts \
             daochu jiedian-rizhi \
             --jiedian vsr://mainnet/IN-KA/operational/warehouse/voi/bangalore/warehouse-001 \
             --kaishi 2026-07-21T00:00:00Z \
