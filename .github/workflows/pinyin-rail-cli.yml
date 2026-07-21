@@ -53,10 +53,21 @@ jobs:
             --jieshu 2026-07-21T23:59:59Z \
             > rail-command.json
           jq -e '.compiled.tool == "rail.logs.export"' rail-command.json
+          jq -e '.compiled.execution.authorization_required == true' rail-command.json
 
-      - name: Preserve compiled command
+      - name: Assemble conformance artifact
+        run: |
+          mkdir -p rail-conformance
+          cp rail-command.json rail-conformance/
+          cp rail-cli/commands.v0.1.json rail-conformance/
+          cp rail-mcp/tool-contracts.v0.1.json rail-conformance/
+          cp rail-mcp/authorization-envelope.schema.v0.1.json rail-conformance/
+          cp rail-mcp/node-registry.schema.v0.1.json rail-conformance/
+          sha256sum rail-conformance/* > rail-conformance/SHA256SUMS
+
+      - name: Preserve compiled command and security contracts
         uses: actions/upload-artifact@v4
         with:
-          name: pinyin-rail-command-${{ github.run_id }}
-          path: rail-command.json
+          name: pinyin-rail-conformance-${{ github.run_id }}
+          path: rail-conformance/
           retention-days: 30
