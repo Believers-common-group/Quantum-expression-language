@@ -9,6 +9,10 @@
     "build": "tsx script/build.ts",
     "start": "NODE_ENV=production node dist/index.cjs",
     "check": "tsc",
+    "check:rail": "tsc -p rail-tsconfig.json",
+    "test:rail": "tsx --test rail-cli/*.test.ts rail-mcp/*.test.ts",
+    "railctl": "tsx rail-cli/railctl.ts",
+    "rail:mcp": "tsx rail-mcp/server.ts",
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
@@ -58,7 +62,7 @@
     "memorystore": "^1.6.7",
     "next-themes": "^0.4.6",
     "passport": "^0.7.0",
-    "passport-local": "^1.0.0",
+    "passport-local": "^1.0.38",
     "pg": "^8.16.3",
     "react": "^19.2.0",
     "react-day-picker": "^9.11.1",
