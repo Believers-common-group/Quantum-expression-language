@@ -31,6 +31,7 @@ export type CompiledRailCommand = {
   execution: {
     mode: "compile-only" | "execute";
     confirmation_required: boolean;
+    authorization_required: true;
   };
 };
 
@@ -38,10 +39,12 @@ export type CliControls = {
   execute: boolean;
   confirm?: string;
   mcpUrl?: string;
+  authorizationFile?: string;
 };
 
 const REGISTRY_URL = new URL("./commands.v0.1.json", import.meta.url);
 const MCP_PROTOCOL_VERSION = "2025-06-18";
+const AUTHORIZATION_META_KEY = "org.believerscommon/authorization";
 
 export async function loadRegistry(): Promise<CommandRegistry> {
   const content = await readFile(REGISTRY_URL, "utf8");
@@ -91,6 +94,12 @@ function validateNodeId(value: unknown): void {
   }
 }
 
+function requireControlValue(argv: string[], index: number, name: string): string {
+  const value = argv[index + 1];
+  if (!value || value.startsWith("--")) throw new Error(`${name} requires a value`);
+  return value;
+}
+
 function takeGlobalControls(argv: string[]): { commandArgv: string[]; controls: CliControls } {
   const controls: CliControls = { execute: false };
   const commandArgv: string[] = [];
@@ -102,12 +111,17 @@ function takeGlobalControls(argv: string[]): { commandArgv: string[]; controls: 
       continue;
     }
     if (token === "--confirm") {
-      controls.confirm = argv[index + 1];
+      controls.confirm = requireControlValue(argv, index, token);
       index += 1;
       continue;
     }
     if (token === "--mcp-url") {
-      controls.mcpUrl = argv[index + 1];
+      controls.mcpUrl = requireControlValue(argv, index, token);
+      index += 1;
+      continue;
+    }
+    if (token === "--authorization-file" || token === "--shouquan-wenjian") {
+      controls.authorizationFile = requireControlValue(argv, index, token);
       index += 1;
       continue;
     }
@@ -208,13 +222,14 @@ export async function compileRailCommand(argv: string[]): Promise<{
       execution: {
         mode: controls.execute ? "execute" : "compile-only",
         confirmation_required: true,
+        authorization_required: true,
       },
     },
     controls,
   };
 }
 
-export function buildToolCall(compiled: CompiledRailCommand, id = 2): JsonObject {
+export function buildToolCall(compiled: CompiledRailCommand, id = 2, authorization?: JsonObject): JsonObject {
   return {
     jsonrpc: "2.0",
     id,
@@ -222,6 +237,7 @@ export function buildToolCall(compiled: CompiledRailCommand, id = 2): JsonObject
     params: {
       name: compiled.tool,
       arguments: compiled.arguments,
+      ...(authorization ? { _meta: { [AUTHORIZATION_META_KEY]: authorization } } : {}),
     },
   };
 }
@@ -266,14 +282,27 @@ async function postMcp(
   return { status: response.status, sessionId: returnedSessionId, payload };
 }
 
+async function loadAuthorizationEnvelope(path: string): Promise<JsonObject> {
+  const parsed = JSON.parse(await readFile(path, "utf8"));
+  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error("Authorization file must contain one JSON object");
+  }
+  return parsed as JsonObject;
+}
+
 export async function executeCompiledCommand(
   compiled: CompiledRailCommand,
   controls: CliControls,
 ): Promise<unknown> {
   const url = controls.mcpUrl ?? process.env.RAIL_MCP_URL;
   const token = process.env.RAIL_MCP_TOKEN;
+  const authorizationFile = controls.authorizationFile ?? process.env.RAIL_AUTHORIZATION_FILE;
   if (!url) throw new Error("Execution requires RAIL_MCP_URL or --mcp-url");
   if (!token) throw new Error("Execution requires RAIL_MCP_TOKEN in the environment");
+  if (!authorizationFile) {
+    throw new Error("Execution requires RAIL_AUTHORIZATION_FILE or --authorization-file/--shouquan-wenjian");
+  }
+  const authorization = await loadAuthorizationEnvelope(authorizationFile);
 
   const initialize = await postMcp(
     url,
@@ -284,7 +313,7 @@ export async function executeCompiledCommand(
       params: {
         protocolVersion: MCP_PROTOCOL_VERSION,
         capabilities: {},
-        clientInfo: { name: "railctl", version: "0.1.0" },
+        clientInfo: { name: "railctl", version: "0.2.0" },
       },
     },
     token,
@@ -297,7 +326,7 @@ export async function executeCompiledCommand(
     initialize.sessionId,
   );
 
-  const result = await postMcp(url, buildToolCall(compiled), token, initialize.sessionId);
+  const result = await postMcp(url, buildToolCall(compiled, 2, authorization), token, initialize.sessionId);
   return result.payload;
 }
 
@@ -305,7 +334,15 @@ export async function runCli(argv = process.argv.slice(2)): Promise<number> {
   try {
     const { compiled, controls } = await compileRailCommand(argv);
     if (!controls.execute) {
-      process.stdout.write(`${JSON.stringify({ compiled, request: buildToolCall(compiled) }, null, 2)}\n`);
+      process.stdout.write(`${JSON.stringify({
+        compiled,
+        request: buildToolCall(compiled),
+        authorization: {
+          required_for_execution: true,
+          supplied_to_compile_output: false,
+          source: controls.authorizationFile ?? process.env.RAIL_AUTHORIZATION_FILE ?? null,
+        },
+      }, null, 2)}\n`);
       return 0;
     }
 
