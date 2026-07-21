@@ -6,6 +6,14 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as readline from "node:readline";
 
+import {
+  type AuthorizationDecision,
+  type RailNodeRecord,
+  type SecurityContext,
+  authorizeToolCall,
+  loadSecurityContextFromEnvironment,
+} from "./authorization";
+
 type JsonObject = Record<string, unknown>;
 type JsonRpcId = string | number | null;
 
@@ -31,7 +39,7 @@ type ContractRegistry = {
 
 const CONTRACTS_URL = new URL("./tool-contracts.v0.1.json", import.meta.url);
 const SERVER_NAME = "qel-pinyin-rail-mcp";
-const SERVER_VERSION = "0.1.0";
+const SERVER_VERSION = "0.2.0";
 
 export async function loadToolContracts(): Promise<ContractRegistry> {
   return JSON.parse(await readFile(CONTRACTS_URL, "utf8")) as ContractRegistry;
@@ -52,6 +60,10 @@ function stableJson(value: unknown): string {
 function stableId(prefix: string, payload: unknown): string {
   const digest = createHash("sha256").update(stableJson(payload)).digest("hex");
   return `${prefix}_${digest.slice(0, 24)}`;
+}
+
+function isObject(value: unknown): value is JsonObject {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
 function jsonRpcResult(id: JsonRpcId | undefined, result: unknown): JsonObject {
@@ -158,17 +170,18 @@ function resourceLink(uri: string, name: string, mimeType = "application/json"):
   return { type: "resource_link", uri, name, mimeType };
 }
 
-function previewResult(tool: string, args: JsonObject): JsonObject {
-  const receiptId = stableId("rcpt", { tool, args });
-  const operationId = stableId("op", { tool, args });
+function previewResult(tool: string, args: JsonObject, authorization: AuthorizationDecision): JsonObject {
+  const receiptId = stableId("rcpt", { tool, args, authorization_id: authorization.authorization_id });
+  const operationId = stableId("op", { tool, args, authorization_id: authorization.authorization_id });
   const resources = [
     resourceLink(`rail://operations/${operationId}`, `${tool} operation`),
     resourceLink(`rail://receipts/${receiptId}`, "Rail operation receipt"),
+    resourceLink(`rail://authorizations/${authorization.authorization_id}`, "Authorization decision"),
   ];
 
   return {
     content: [
-      { type: "text", text: `${tool} compiled in safe preview mode. No node or external destination was modified.` },
+      { type: "text", text: `${tool} authorized and compiled in safe preview mode. No node or external destination was modified.` },
       ...resources,
     ],
     structuredContent: {
@@ -177,25 +190,48 @@ function previewResult(tool: string, args: JsonObject): JsonObject {
       receipt_id: receiptId,
       tool,
       execution_enabled: false,
+      authorization,
       resource_uris: resources.map((item) => item.uri),
     },
     isError: false,
   };
 }
 
-async function sendCommunication(args: JsonObject): Promise<JsonObject> {
+function resolveNodeResult(node: RailNodeRecord, authorization: AuthorizationDecision): JsonObject {
+  const resources = [
+    resourceLink(`rail://nodes/${encodeURIComponent(node.node_id)}`, "Signed rail node"),
+    resourceLink(`rail://authorizations/${authorization.authorization_id}`, "Authorization decision"),
+  ];
+  return {
+    content: [
+      { type: "text", text: `Node ${node.node_id} resolved from signed registry ${authorization.registry_id}.` },
+      ...resources,
+    ],
+    structuredContent: {
+      status: "resolved",
+      node,
+      authorization,
+      resource_uris: resources.map((item) => item.uri),
+    },
+    isError: false,
+  };
+}
+
+async function sendCommunication(args: JsonObject, authorization: AuthorizationDecision): Promise<JsonObject> {
   const executionEnabled = process.env.RAIL_MCP_EXECUTION_ENABLED === "true";
-  if (!executionEnabled) return previewResult("comms.message.send", args);
+  if (!executionEnabled) return previewResult("comms.message.send", args, authorization);
 
   if (args.classification === "confidential" && process.env.RAIL_MCP_CONFIDENTIAL_ENABLED !== "true") {
-    return toolError("Confidential communications require RAIL_MCP_CONFIDENTIAL_ENABLED=true");
+    return toolError("Confidential communications require RAIL_MCP_CONFIDENTIAL_ENABLED=true", {
+      authorization: { status: "authorized", decision_id: authorization.decision_id },
+    });
   }
 
   const outbox = process.env.RAIL_MCP_OUTBOX_DIR;
   if (!outbox) return toolError("Execution is enabled but RAIL_MCP_OUTBOX_DIR is not configured");
 
-  const communicationId = stableId("comm", args);
-  const receiptId = stableId("rcpt", { communicationId, args });
+  const communicationId = stableId("comm", { args, authorization_id: authorization.authorization_id });
+  const receiptId = stableId("rcpt", { communicationId, args, authorization_id: authorization.authorization_id });
   const record = {
     schema: "org.believerscommon.rail.communication.v1",
     communication_id: communicationId,
@@ -208,6 +244,7 @@ async function sendCommunication(args: JsonObject): Promise<JsonObject> {
     message: args.message,
     resource_links: args.resource_links ?? [],
     idempotency_key: args.idempotency_key,
+    authorization,
     boundary: "Outbox acceptance is not proof that an external channel delivered the message.",
   };
 
@@ -229,13 +266,14 @@ async function sendCommunication(args: JsonObject): Promise<JsonObject> {
       { type: "text", text: `Communication ${communicationId} accepted to the controlled outbox.` },
       resourceLink(`rail://communications/${communicationId}`, "Communication record"),
       resourceLink(`rail://receipts/${receiptId}`, "Communication receipt"),
+      resourceLink(`rail://authorizations/${authorization.authorization_id}`, "Authorization decision"),
     ],
     structuredContent: persistedRecord,
     isError: false,
   };
 }
 
-async function communicationStatus(args: JsonObject): Promise<JsonObject> {
+async function communicationStatus(args: JsonObject, authorization: AuthorizationDecision): Promise<JsonObject> {
   const outbox = process.env.RAIL_MCP_OUTBOX_DIR;
   if (!outbox) return toolError("RAIL_MCP_OUTBOX_DIR is not configured");
   const id = String(args.communication_id);
@@ -247,8 +285,9 @@ async function communicationStatus(args: JsonObject): Promise<JsonObject> {
       content: [
         { type: "text", text: `Communication ${id}: ${String(record.status)}` },
         resourceLink(`rail://communications/${id}`, "Communication record"),
+        resourceLink(`rail://authorizations/${authorization.authorization_id}`, "Authorization decision"),
       ],
-      structuredContent: record,
+      structuredContent: { ...record, read_authorization: authorization },
       isError: false,
     };
   } catch (error) {
@@ -258,7 +297,12 @@ async function communicationStatus(args: JsonObject): Promise<JsonObject> {
   }
 }
 
-async function callTool(contract: ToolContract, args: JsonObject): Promise<JsonObject> {
+async function callTool(
+  contract: ToolContract,
+  args: JsonObject,
+  meta: JsonObject | undefined,
+  providedSecurityContext?: SecurityContext,
+): Promise<JsonObject> {
   try {
     assertNoSensitiveKeys(args);
   } catch (error) {
@@ -268,13 +312,36 @@ async function callTool(contract: ToolContract, args: JsonObject): Promise<JsonO
   const validationErrors = validateSchema(args, contract.inputSchema);
   if (validationErrors.length > 0) return toolError("Tool arguments failed validation", { validation_errors: validationErrors });
 
-  if (contract.name === "comms.message.send") return sendCommunication(args);
-  if (contract.name === "comms.message.status") return communicationStatus(args);
+  let securityContext: SecurityContext;
+  try {
+    securityContext = providedSecurityContext ?? await loadSecurityContextFromEnvironment();
+  } catch (error) {
+    return toolError(error instanceof Error ? error.message : String(error), {
+      authorization: { status: "denied", code: "security-context-unavailable" },
+    });
+  }
 
-  return previewResult(contract.name, args);
+  const authorization = authorizeToolCall(contract.name, args, meta, securityContext);
+  if (!authorization.ok) {
+    return toolError(authorization.message, {
+      authorization: { status: "denied", code: authorization.code },
+    });
+  }
+
+  if (contract.name === "rail.nodes.resolve") {
+    if (!authorization.node) return toolError("Authorized node resolution returned no node");
+    return resolveNodeResult(authorization.node, authorization.decision);
+  }
+  if (contract.name === "comms.message.send") return sendCommunication(args, authorization.decision);
+  if (contract.name === "comms.message.status") return communicationStatus(args, authorization.decision);
+
+  return previewResult(contract.name, args, authorization.decision);
 }
 
-export async function handleMcpRequest(request: JsonRpcRequest): Promise<JsonObject | null> {
+export async function handleMcpRequest(
+  request: JsonRpcRequest,
+  securityContext?: SecurityContext,
+): Promise<JsonObject | null> {
   const registry = await loadToolContracts();
 
   if (request.method === "notifications/initialized") return null;
@@ -285,9 +352,9 @@ export async function handleMcpRequest(request: JsonRpcRequest): Promise<JsonObj
       serverInfo: {
         name: SERVER_NAME,
         version: SERVER_VERSION,
-        description: "Safe Pinyin rail-node and communications command server",
+        description: "Authorized Pinyin rail-node and controlled communications command server",
       },
-      instructions: "Node operations run in preview mode. Communications require explicit environment activation and use a controlled local outbox.",
+      instructions: "Every tools/call requires a dual-signed DigitalMe/Warden authorization envelope bound to a signed node-registry digest. Node operations remain preview-only.",
     });
   }
   if (request.method === "ping") return jsonRpcResult(request.id, {});
@@ -298,6 +365,7 @@ export async function handleMcpRequest(request: JsonRpcRequest): Promise<JsonObj
         title,
         description,
         inputSchema,
+        _meta: { "org.believerscommon/authorization-required": true },
       })),
     });
   }
@@ -305,13 +373,13 @@ export async function handleMcpRequest(request: JsonRpcRequest): Promise<JsonObj
     const params = request.params ?? {};
     const name = params.name;
     const args = params.arguments;
+    const meta = params._meta;
     if (typeof name !== "string") return jsonRpcError(request.id, -32602, "tools/call requires params.name");
-    if (args === null || typeof args !== "object" || Array.isArray(args)) {
-      return jsonRpcError(request.id, -32602, "tools/call requires object params.arguments");
-    }
+    if (!isObject(args)) return jsonRpcError(request.id, -32602, "tools/call requires object params.arguments");
+    if (meta !== undefined && !isObject(meta)) return jsonRpcError(request.id, -32602, "tools/call params._meta must be an object");
     const contract = registry.tools.find((candidate) => candidate.name === name);
     if (!contract) return jsonRpcError(request.id, -32602, `Unknown tool: ${name}`);
-    return jsonRpcResult(request.id, await callTool(contract, args as JsonObject));
+    return jsonRpcResult(request.id, await callTool(contract, args, meta as JsonObject | undefined, securityContext));
   }
 
   return jsonRpcError(request.id, -32601, `Method not found: ${request.method}`);
