@@ -1,0 +1,252 @@
+name: PR 11 notification log archive
+
+on:
+  workflow_run:
+    workflows: ["PR 11 review and merge notifications"]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download completed run evidence
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SOURCE_RUN_ID: ${{ github.event.workflow_run.id }}
+          SOURCE_RUN_URL: ${{ github.event.workflow_run.html_url }}
+          SOURCE_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          SOURCE_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          SOURCE_EVENT: ${{ github.event.workflow_run.event }}
+        run: |
+          set -euo pipefail
+          mkdir -p archive
+
+          curl --fail-with-body --location \
+            --header "Authorization: Bearer ${GH_TOKEN}" \
+            --header "Accept: application/vnd.github+json" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/runs/${SOURCE_RUN_ID}/logs" \
+            --output archive/source-run-logs.zip
+
+          curl --fail-with-body --location \
+            --header "Authorization: Bearer ${GH_TOKEN}" \
+            --header "Accept: application/vnd.github+json" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/runs/${SOURCE_RUN_ID}/jobs" \
+            --output archive/source-run-jobs.json
+
+          curl --fail-with-body --location \
+            --header "Authorization: Bearer ${GH_TOKEN}" \
+            --header "Accept: application/vnd.github+json" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/runs/${SOURCE_RUN_ID}/artifacts" \
+            --output archive/source-run-artifacts.json
+
+          jq -n \
+            --arg schema "org.believerscommon.github.workflow-log-archive.v1" \
+            --arg repository "${GITHUB_REPOSITORY}" \
+            --arg source_run_id "${SOURCE_RUN_ID}" \
+            --arg source_run_url "${SOURCE_RUN_URL}" \
+            --arg conclusion "${SOURCE_CONCLUSION}" \
+            --arg head_sha "${SOURCE_HEAD_SHA}" \
+            --arg source_event "${SOURCE_EVENT}" \
+            --arg archived_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{
+              schema: $schema,
+              repository: $repository,
+              pull_request: 11,
+              source_workflow: "PR 11 review and merge notifications",
+              source_run_id: $source_run_id,
+              source_run_url: $source_run_url,
+              conclusion: $conclusion,
+              head_sha: $head_sha,
+              source_event: $source_event,
+              archived_at: $archived_at,
+              files: [
+                "source-run-logs.zip",
+                "source-run-jobs.json",
+                "source-run-artifacts.json"
+              ],
+              trust_boundary: "GitHub Actions evidence under repository control; not OpenAI or ChatGPT internal system logs."
+            }' > archive/log-archive-manifest.json
+
+          cat > archive/gpt-log-index.md <<EOF
+          # GPT log index — PR #11 notification run
+
+          - Repository: ${GITHUB_REPOSITORY}
+          - Pull request: #11
+          - Source workflow run: ${SOURCE_RUN_URL}
+          - Source run ID: ${SOURCE_RUN_ID}
+          - Conclusion: ${SOURCE_CONCLUSION}
+          - Head SHA: ${SOURCE_HEAD_SHA}
+          - Source event: ${SOURCE_EVENT}
+
+          ## Included evidence
+
+          - source-run-logs.zip
+          - source-run-jobs.json
+          - source-run-artifacts.json
+          - log-archive-manifest.json
+
+          This index is designed for later GPT-assisted inspection. It is not an export of OpenAI or ChatGPT internal cache or private system logs.
+          EOF
+
+      - name: Upload completed workflow logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr11-run-logs-${{ github.event.workflow_run.id }}
+          path: archive/
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Record archive and notify destinations
+        uses: actions/github-script@v7
+        env:
+          SOURCE_RUN_ID: ${{ github.event.workflow_run.id }}
+          SOURCE_RUN_URL: ${{ github.event.workflow_run.html_url }}
+          SOURCE_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          SOURCE_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          SLACK_WEBHOOK_URL: ${{ secrets.PR11_SLACK_WEBHOOK_URL }}
+          NOTION_TOKEN: ${{ secrets.PR11_NOTION_TOKEN }}
+          NOTION_PARENT_PAGE_ID: ${{ secrets.PR11_NOTION_PARENT_PAGE_ID || '3a323c8ea59d819faa8af8f848cd25a0' }}
+          DROPBOX_ACCESS_TOKEN: ${{ secrets.PR11_DROPBOX_ACCESS_TOKEN }}
+          DROPBOX_PATH: ${{ vars.PR11_DROPBOX_PATH }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require("fs");
+            const { owner, repo } = context.repo;
+            const sourceRunId = process.env.SOURCE_RUN_ID;
+            const sourceRunUrl = process.env.SOURCE_RUN_URL;
+            const sourceConclusion = process.env.SOURCE_CONCLUSION;
+            const sourceHeadSha = process.env.SOURCE_HEAD_SHA;
+            const archiveRunUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+            const artifactName = `pr11-run-logs-${sourceRunId}`;
+            const auditIssueUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/issues/13`;
+            const commitUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/commit/${sourceHeadSha}`;
+
+            const issueComment = [
+              `### PR #11 notification logs archived`,
+              "",
+              `- Source conclusion: \`${sourceConclusion}\``,
+              `- Source run: [${sourceRunId}](${sourceRunUrl})`,
+              `- Archive run: [${process.env.GITHUB_RUN_ID}](${archiveRunUrl})`,
+              `- Head commit: [${sourceHeadSha}](${commitUrl})`,
+              `- Log artifact: \`${artifactName}\``,
+              "- Retention: 90 days",
+              "",
+              "> The archive contains GitHub Actions logs and sanitized event artifacts. It does not contain OpenAI or ChatGPT internal logs.",
+            ].join("\n");
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: 13,
+              body: issueComment,
+            });
+
+            async function sendJson(url, body, headers, destination) {
+              const response = await fetch(url, {
+                method: "POST",
+                headers,
+                body: JSON.stringify(body),
+              });
+              if (!response.ok) {
+                const responseText = await response.text();
+                throw new Error(`${destination} notification failed (${response.status}): ${responseText.slice(0, 500)}`);
+              }
+            }
+
+            if (process.env.SLACK_WEBHOOK_URL) {
+              await sendJson(
+                process.env.SLACK_WEBHOOK_URL,
+                {
+                  text: `PR #11 notification logs archived: ${archiveRunUrl}`,
+                  blocks: [
+                    {
+                      type: "section",
+                      text: {
+                        type: "mrkdwn",
+                        text: `*PR #11 notification logs archived*\nConclusion: ${sourceConclusion}\nArtifact: ${artifactName}\n<${sourceRunUrl}|Source logs> | <${archiveRunUrl}|Archive run> | <${auditIssueUrl}|Audit issue>`,
+                      },
+                    },
+                  ],
+                },
+                { "Content-Type": "application/json" },
+                "Slack",
+              );
+            }
+
+            if (process.env.NOTION_TOKEN && process.env.NOTION_PARENT_PAGE_ID) {
+              await sendJson(
+                "https://api.notion.com/v1/pages",
+                {
+                  parent: { page_id: process.env.NOTION_PARENT_PAGE_ID },
+                  properties: {
+                    title: {
+                      type: "title",
+                      title: [{ type: "text", text: { content: `PR #11 logs archived — run ${sourceRunId}` } }],
+                    },
+                  },
+                  children: [
+                    {
+                      object: "block",
+                      type: "paragraph",
+                      paragraph: {
+                        rich_text: [
+                          {
+                            type: "text",
+                            text: { content: `Conclusion: ${sourceConclusion} | Artifact: ${artifactName} | Retention: 90 days` },
+                          },
+                        ],
+                      },
+                    },
+                    { object: "block", type: "bookmark", bookmark: { url: sourceRunUrl } },
+                    { object: "block", type: "bookmark", bookmark: { url: archiveRunUrl } },
+                    { object: "block", type: "bookmark", bookmark: { url: auditIssueUrl } },
+                    { object: "block", type: "bookmark", bookmark: { url: commitUrl } },
+                  ],
+                },
+                {
+                  Authorization: `Bearer ${process.env.NOTION_TOKEN}`,
+                  "Content-Type": "application/json",
+                  "Notion-Version": "2022-06-28",
+                },
+                "Notion",
+              );
+            }
+
+            async function uploadDropbox(dropboxFile, content) {
+              const response = await fetch("https://content.dropboxapi.com/2/files/upload", {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${process.env.DROPBOX_ACCESS_TOKEN}`,
+                  "Content-Type": "application/octet-stream",
+                  "Dropbox-API-Arg": JSON.stringify({
+                    path: dropboxFile,
+                    mode: "add",
+                    autorename: true,
+                    mute: false,
+                    strict_conflict: false,
+                  }),
+                },
+                body: content,
+              });
+              if (!response.ok) {
+                const responseText = await response.text();
+                throw new Error(`Dropbox archive upload failed (${response.status}): ${responseText.slice(0, 500)}`);
+              }
+            }
+
+            if (process.env.DROPBOX_ACCESS_TOKEN) {
+              const folder = (process.env.DROPBOX_PATH || "/QEL/PR-11-notifications").replace(/\/$/, "");
+              const stem = `${folder}/logs/source-run-${sourceRunId}`;
+              await uploadDropbox(`${stem}-logs.zip`, fs.readFileSync("archive/source-run-logs.zip"));
+              await uploadDropbox(`${stem}-manifest.json`, fs.readFileSync("archive/log-archive-manifest.json"));
+              await uploadDropbox(`${stem}-gpt-log-index.md`, fs.readFileSync("archive/gpt-log-index.md"));
+            }
