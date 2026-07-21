@@ -1,8 +1,26 @@
 {
   "protocol_version": "2025-06-18",
-  "contract_version": "0.1.0",
+  "contract_version": "0.2.0",
   "status": "draft",
+  "authorization": {
+    "metadata_key": "org.believerscommon/authorization",
+    "required_proofs": ["digitalme-actor", "warden-policy"],
+    "registry_binding": "sha256 canonical node-registry digest"
+  },
   "tools": [
+    {
+      "name": "rail.nodes.resolve",
+      "title": "Resolve signed rail node",
+      "description": "Resolve one exact node from the signed Warden registry after DigitalMe and Warden authorization checks.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["node_id"],
+        "properties": {
+          "node_id": {"type": "string", "pattern": "^(vsr://|urn:vsr:node:)"}
+        }
+      }
+    },
     {
       "name": "rail.logs.export",
       "title": "Export rail-node logs",
@@ -27,7 +45,7 @@
     {
       "name": "rail.logs.import.prepare",
       "title": "Prepare rail-node log import",
-      "description": "Validate provenance and digest, then place an import into quarantine. This tool never commits authoritative evidence.",
+      "description": "Validate provenance and digest, then place an authorized import into quarantine. This tool never commits authoritative evidence.",
       "inputSchema": {
         "type": "object",
         "additionalProperties": false,
@@ -46,7 +64,7 @@
     {
       "name": "rail.logs.query",
       "title": "Query rail-node logs",
-      "description": "Return a redacted query plan or delegated node-log result.",
+      "description": "Return an authorized redacted query plan or delegated node-log result.",
       "inputSchema": {
         "type": "object",
         "additionalProperties": false,
@@ -63,7 +81,7 @@
     {
       "name": "rail.receipts.get",
       "title": "Read rail receipt",
-      "description": "Read a receipt by its stable identifier.",
+      "description": "Read a receipt by its stable identifier under an authorized capability.",
       "inputSchema": {
         "type": "object",
         "additionalProperties": false,
@@ -74,7 +92,7 @@
     {
       "name": "comms.message.send",
       "title": "Send controlled communication",
-      "description": "Create a classified communication request and route it through configured adapters.",
+      "description": "Create an authorized classified communication request and route it through configured adapters.",
       "inputSchema": {
         "type": "object",
         "additionalProperties": false,
@@ -98,7 +116,7 @@
     {
       "name": "comms.message.status",
       "title": "Read communication status",
-      "description": "Read the status of a communication request from the controlled outbox.",
+      "description": "Read an authorized communication request status from the controlled outbox.",
       "inputSchema": {
         "type": "object",
         "additionalProperties": false,
