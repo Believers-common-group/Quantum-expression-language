@@ -1,0 +1,38 @@
+name: Validate Genesis QEL
+
+on:
+  push:
+    branches:
+      - genesis
+    paths:
+      - 'genesis/executable-profile/**'
+      - 'genesis/lenseos/**'
+      - 'tools/validate_genesis_qel.py'
+      - '.github/workflows/validate-genesis-qel.yml'
+  pull_request:
+    paths:
+      - 'genesis/executable-profile/**'
+      - 'genesis/lenseos/**'
+      - 'tools/validate_genesis_qel.py'
+      - '.github/workflows/validate-genesis-qel.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install validator dependency
+        run: python -m pip install --disable-pip-version-check jsonschema
+
+      - name: Validate Genesis QEL executable expressions
+        run: python3 tools/validate_genesis_qel.py
