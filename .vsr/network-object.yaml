@@ -1,0 +1,21 @@
+schema: vsr.network-object/v1
+network_object: QEL-QUANTUM-VISION-LEGACY-001
+repo_role: legacy
+authority_boundary: NONE
+canonical_source:
+  repository: Believers-common-group/Quantum-expression-language
+  branch: main
+  contract: README.md
+depends_on: []
+consumed_by: []
+lineage:
+  predecessor: null
+  supersedes: null
+  superseded_by: null
+status: review
+provenance:
+  upstream: []
+  licence_review_required: true
+contribution:
+  architecture_decisions_repo: Believers-common-group/SynergyzeGovernance
+  architectural_change_requires_network_object_id: true
