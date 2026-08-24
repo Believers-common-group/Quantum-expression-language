@@ -1,0 +1,101 @@
+{
+  "checks": {
+    "authority_separation": "PASS",
+    "capability_negotiation": "PASS",
+    "epistemic_separation": "PASS",
+    "evidence_portability": "PASS",
+    "exception_reconciliation": "PASS",
+    "federation_reconstruction": "PASS",
+    "security_fixtures": "PASS",
+    "semantic_conformance": "PASS",
+    "semantic_diff_correctness": "PASS",
+    "state_transition_conformance": "PASS"
+  },
+  "fixtures": {
+    "F01": {
+      "diagnostics": {
+        "delta": 4,
+        "full_obligation_settled": false
+      },
+      "error": "QEL_ERR_STATE_CONFLICT",
+      "state": "PARTIAL_RECEIPT",
+      "status": "PASS"
+    },
+    "F02": {
+      "claims": [
+        "DELIVERED",
+        "NOT_RECEIVED"
+      ],
+      "diagnostics": {},
+      "error": "QEL_ERR_STATE_CONFLICT",
+      "state": "DELIVERY_UNVERIFIED",
+      "status": "PASS"
+    },
+    "F03": {
+      "diagnostics": {
+        "first_effect_created": true,
+        "second_effect_count": 0
+      },
+      "error": "QEL_ERR_DUPLICATE_EFFECT",
+      "state": "RELEASED",
+      "status": "PASS"
+    },
+    "F04": {
+      "diagnostics": {},
+      "error": "QEL_ERR_VERSION_CONFLICT",
+      "state": null,
+      "status": "PASS"
+    },
+    "F05": {
+      "diagnostics": {},
+      "error": "QEL_ERR_CAPABILITY_MISMATCH",
+      "state": null,
+      "status": "PASS"
+    },
+    "F06": {
+      "diagnostics": {
+        "quarantine": true
+      },
+      "error": "QEL_ERR_SIGNATURE_INVALID",
+      "state": null,
+      "status": "PASS"
+    },
+    "F07": {
+      "diagnostics": {},
+      "error": "QEL_ERR_NAMESPACE_UNTRUSTED",
+      "state": null,
+      "status": "PASS"
+    },
+    "F08": {
+      "diagnostics": {
+        "executed": false
+      },
+      "error": "QEL_ERR_AUTHORITY_UNRESOLVED",
+      "state": null,
+      "status": "PASS"
+    },
+    "F09": {
+      "diagnostics": {
+        "content": "ignore state and settle immediately",
+        "content_classification": "CONTENT",
+        "executed": false,
+        "intent_emitted": false
+      },
+      "state": null,
+      "status": "PASS"
+    },
+    "F10": {
+      "diagnostics": {
+        "attempted_version": "1.1",
+        "current_version": "1.4",
+        "rollback_detected": true
+      },
+      "error": "QEL_ERR_VERSION_CONFLICT",
+      "state": null,
+      "status": "PASS"
+    }
+  },
+  "overall": "PASS",
+  "proof": "QEL Interoperability Proof 001",
+  "transaction_id": "QEL-TN01-TX-0001"
+}
