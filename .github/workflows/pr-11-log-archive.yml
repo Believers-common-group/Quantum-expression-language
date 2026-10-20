@@ -26,12 +26,45 @@ jobs:
           set -euo pipefail
           mkdir -p archive
 
+          # Preserve source-run metadata even when the historical log ZIP is gone.
           curl --fail-with-body --location \
             --header "Authorization: Bearer ${GH_TOKEN}" \
             --header "Accept: application/vnd.github+json" \
             --header "X-GitHub-Api-Version: 2022-11-28" \
-            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/runs/${SOURCE_RUN_ID}/logs" \
-            --output archive/source-run-logs.zip
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/runs/${SOURCE_RUN_ID}" \
+            --output archive/source-run.json
+
+          LOGS_HTTP_STATUS="$(
+            curl --silent --show-error --location \
+              --header "Authorization: Bearer ${GH_TOKEN}" \
+              --header "Accept: application/vnd.github+json" \
+              --header "X-GitHub-Api-Version: 2022-11-28" \
+              "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/runs/${SOURCE_RUN_ID}/logs" \
+              --output archive/source-run-logs.zip \
+              --write-out '%{http_code}'
+          )" || {
+            echo "::error::Source-run log download encountered a transport failure"
+            exit 1
+          }
+          case "${LOGS_HTTP_STATUS}" in
+            200)
+              unzip -tq archive/source-run-logs.zip >/dev/null || {
+                echo "::error::Source-run logs response is not a valid ZIP"
+                exit 1
+              }
+              LOGS_AVAILABLE=true
+              ;;
+            404|410)
+              rm -f archive/source-run-logs.zip
+              LOGS_AVAILABLE=false
+              echo "::warning::Source logs unavailable (HTTP ${LOGS_HTTP_STATUS}); archiving available run/job metadata"
+              ;;
+            *)
+              rm -f archive/source-run-logs.zip
+              echo "::error::Source log access failed (HTTP ${LOGS_HTTP_STATUS}); investigate rather than masking authorization/server failures"
+              exit 1
+              ;;
+          esac
 
           curl --fail-with-body --location \
             --header "Authorization: Bearer ${GH_TOKEN}" \
@@ -55,6 +88,8 @@ jobs:
             --arg conclusion "${SOURCE_CONCLUSION}" \
             --arg head_sha "${SOURCE_HEAD_SHA}" \
             --arg source_event "${SOURCE_EVENT}" \
+            --argjson logs_available "${LOGS_AVAILABLE}" \
+            --arg logs_http_status "${LOGS_HTTP_STATUS}" \
             --arg archived_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             '{
               schema: $schema,
@@ -66,12 +101,10 @@ jobs:
               conclusion: $conclusion,
               head_sha: $head_sha,
               source_event: $source_event,
+              logs_available: $logs_available,
+              logs_http_status: $logs_http_status,
               archived_at: $archived_at,
-              files: [
-                "source-run-logs.zip",
-                "source-run-jobs.json",
-                "source-run-artifacts.json"
-              ],
+              files: (["source-run.json", "source-run-jobs.json", "source-run-artifacts.json"] + (if $logs_available then ["source-run-logs.zip"] else [] end)),
               trust_boundary: "GitHub Actions evidence under repository control; not OpenAI or ChatGPT internal system logs."
             }' > archive/log-archive-manifest.json
 
@@ -85,10 +118,12 @@ jobs:
           - Conclusion: ${SOURCE_CONCLUSION}
           - Head SHA: ${SOURCE_HEAD_SHA}
           - Source event: ${SOURCE_EVENT}
+          - Source logs available: ${LOGS_AVAILABLE} (HTTP ${LOGS_HTTP_STATUS})
 
           ## Included evidence
 
-          - source-run-logs.zip
+          - source-run.json
+          - source-run-logs.zip (present only when source logs are available)
           - source-run-jobs.json
           - source-run-artifacts.json
           - log-archive-manifest.json
@@ -120,6 +155,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require("fs");
+            const archiveManifest = JSON.parse(fs.readFileSync("archive/log-archive-manifest.json", "utf8"));
+            const logsArchived = archiveManifest.logs_available === true;
+            const archiveDescription = logsArchived ? "notification logs archived" : "notification metadata archived; source logs unavailable";
             const { owner, repo } = context.repo;
             const sourceRunId = process.env.SOURCE_RUN_ID;
             const sourceRunUrl = process.env.SOURCE_RUN_URL;
@@ -131,16 +169,17 @@ jobs:
             const commitUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/commit/${sourceHeadSha}`;
 
             const issueComment = [
-              `### PR #11 notification logs archived`,
+              `### PR #11 ${archiveDescription}`,
               "",
               `- Source conclusion: \`${sourceConclusion}\``,
               `- Source run: [${sourceRunId}](${sourceRunUrl})`,
               `- Archive run: [${process.env.GITHUB_RUN_ID}](${archiveRunUrl})`,
               `- Head commit: [${sourceHeadSha}](${commitUrl})`,
-              `- Log artifact: \`${artifactName}\``,
+              `- Archive artifact: \`${artifactName}\``,
+              `- Source logs available: \`${logsArchived}\` (HTTP ${archiveManifest.logs_http_status})`,
               "- Retention: 90 days",
               "",
-              "> The archive contains GitHub Actions logs and sanitized event artifacts. It does not contain OpenAI or ChatGPT internal logs.",
+              "> The archive contains available GitHub Actions evidence and run metadata. Missing historical source logs are explicitly recorded, not fabricated. It does not contain OpenAI or ChatGPT internal logs.",
             ].join("\n");
 
             await github.rest.issues.createComment({
@@ -166,13 +205,13 @@ jobs:
               await sendJson(
                 process.env.SLACK_WEBHOOK_URL,
                 {
-                  text: `PR #11 notification logs archived: ${archiveRunUrl}`,
+                  text: `PR #11 ${archiveDescription}: ${archiveRunUrl}`,
                   blocks: [
                     {
                       type: "section",
                       text: {
                         type: "mrkdwn",
-                        text: `*PR #11 notification logs archived*\nConclusion: ${sourceConclusion}\nArtifact: ${artifactName}\n<${sourceRunUrl}|Source logs> | <${archiveRunUrl}|Archive run> | <${auditIssueUrl}|Audit issue>`,
+                        text: `*PR #11 ${archiveDescription}*\nConclusion: ${sourceConclusion}\nLogs available: ${logsArchived}\nArtifact: ${artifactName}\n<${sourceRunUrl}|Source run> | <${archiveRunUrl}|Archive run> | <${auditIssueUrl}|Audit issue>`,
                       },
                     },
                   ],
@@ -190,7 +229,7 @@ jobs:
                   properties: {
                     title: {
                       type: "title",
-                      title: [{ type: "text", text: { content: `PR #11 logs archived — run ${sourceRunId}` } }],
+                      title: [{ type: "text", text: { content: `PR #11 ${archiveDescription} — run ${sourceRunId}` } }],
                     },
                   },
                   children: [
@@ -201,7 +240,7 @@ jobs:
                         rich_text: [
                           {
                             type: "text",
-                            text: { content: `Conclusion: ${sourceConclusion} | Artifact: ${artifactName} | Retention: 90 days` },
+                            text: { content: `Conclusion: ${sourceConclusion} | Logs available: ${logsArchived} | Artifact: ${artifactName} | Retention: 90 days` },
                           },
                         ],
                       },
@@ -246,7 +285,9 @@ jobs:
             if (process.env.DROPBOX_ACCESS_TOKEN) {
               const folder = (process.env.DROPBOX_PATH || "/QEL/PR-11-notifications").replace(/\/$/, "");
               const stem = `${folder}/logs/source-run-${sourceRunId}`;
-              await uploadDropbox(`${stem}-logs.zip`, fs.readFileSync("archive/source-run-logs.zip"));
+              if (logsArchived) {
+                await uploadDropbox(`${stem}-logs.zip`, fs.readFileSync("archive/source-run-logs.zip"));
+              }
               await uploadDropbox(`${stem}-manifest.json`, fs.readFileSync("archive/log-archive-manifest.json"));
               await uploadDropbox(`${stem}-gpt-log-index.md`, fs.readFileSync("archive/gpt-log-index.md"));
             }
